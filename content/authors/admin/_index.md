@@ -13,16 +13,19 @@ education:
     year: 2021
 email: dani.hc97@gmail.com
 highlight_name: no
+
 interests:
 - Computational Ecology
 - Freshwater ecosystems
 - Metacomunity theory
 - Machine learning
 - R programming
+
 organizations:
 - name: Universitat de Girona
-  url: https://www.stanford.edu/
+  url: https://www.udg.edu/
 role: PHD student
+
 social:
 - icon: envelope
   icon_pack: fas
@@ -32,16 +35,13 @@ social:
   icon: twitter
   icon_pack: fab
   label: Follow me on Twitter
-  link: https://twitter.com/GeorgeCushen
-- icon: graduation-cap
-  icon_pack: fas
-  link: https://scholar.google.co.uk/citations?user=sIwtMXoAAAAJ
+  link: https://twitter.com/Dani_hc97
 - icon: github
   icon_pack: fab
   link: https://github.com/dhercar
 - icon: linkedin
   icon_pack: fab
-  link: https://www.linkedin.com/
+  link: https://www.linkedin.com/in/dani-hernandez-b907531ba/
 superuser: yes
 bio: I sdfasdf
 ---
