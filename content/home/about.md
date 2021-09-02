@@ -13,6 +13,15 @@ headless: true
 weight: 20
 
 title: Biography
+design:
+  columns: "1"
+  background:
+    image:
+    image_darken: 3
+    image_parallax: true
+    image_position: center
+    image_size: cover
+    text_color_light: false
 
 # Choose the user profile to display
 # This should be the username (folder name) of a profile in your `content/authors/` folder.
