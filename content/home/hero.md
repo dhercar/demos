@@ -2,9 +2,8 @@
 active: false
 widget: hero
 headless: true
-weight: 12
-title: Daniel Hernández
-hero_media: portrait.jpg
+weight: 15
+title:
 design:
   columns: "1"
   background: 
@@ -14,13 +13,12 @@ design:
     image_parallax: true
     image_position: center
     image_size: cover
+  spacing:
+    padding: ["10px", "10px", "10px", "10px"]
 advanced:
   css_class: fullscreen
 ---
 
-
-
-
-
+<center>
 
 

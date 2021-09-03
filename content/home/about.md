@@ -16,12 +16,12 @@ title: Biography
 design:
   columns: "1"
   background:
-    image:
-    image_darken: 3
+    image: fons.jpg
+    image_darken: 0.4
     image_parallax: true
     image_position: center
     image_size: cover
-    text_color_light: false
+    text_color_light: true
 
 # Choose the user profile to display
 # This should be the username (folder name) of a profile in your `content/authors/` folder.

@@ -11,7 +11,7 @@ education:
   - course: MS in ECOLOGY and MANAGEMENT of natural systems
     institution: University of Barcelona
     year: 2021
-email: dani.hc97@gmail.com
+# email: dani.hc97@gmail.com
 highlight_name: no
 
 interests:
