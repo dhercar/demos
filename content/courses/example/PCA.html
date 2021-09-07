@@ -1,0 +1,36 @@
+---
+title: PCA and beautiful biplot
+author: "Daniel Hernández"
+date: 2
+categories: ["PCA"]
+tags: ["PCA", "plot"]
+---
+
+
+
+<!--more-->
+<p>In this tutorial you will learn how to use the <code>prcomp</code> function to perform a principal component analyses (PCA) and display the results in a fully customizable format. I assume you are familiarized with the theory behind a PCA and have basic R-programming skills.</p>
+<div id="example-data-iris" class="section level2">
+<h2>Example data (IRIS)</h2>
+<p>We are going to use the <a href="https://archive.ics.uci.edu/ml/datasets/iris">iris</a> dataset as an example. It includes four numerical variables representing four flower characteristics and one categorical variable that corresponds to the taxonomic classification.</p>
+<pre class="r"><code>data(iris) # Load dataset
+sapply(iris, class) #Check type of variables</code></pre>
+<pre><code>## Sepal.Length  Sepal.Width Petal.Length  Petal.Width      Species 
+##    &quot;numeric&quot;    &quot;numeric&quot;    &quot;numeric&quot;    &quot;numeric&quot;     &quot;factor&quot;</code></pre>
+</div>
+<div id="objective" class="section level2">
+<h2>Objective</h2>
+<p>We want to know:</p>
+<ul>
+<li>Whether the variables that describe de flower can be summarized in two numeric axis or not.</li>
+<li>How variables are correlated among them.</li>
+<li>If different groups of plants have distinct flower characteristics</li>
+</ul>
+<p>A good way to inspect the data is to analyse the correlation between variables. For that I like using the <code>PerformanceAnalytics</code> package.</p>
+<pre class="r"><code>PerformanceAnalytics:: chart.Correlation(iris[,-5],
+                                         histogram=TRUE, 
+                                         pch=10,
+                                         method = &quot;pearson&quot;)</code></pre>
+<p><img src="/courses/example/PCA_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<p>There is a strong correlation between some variables, specially between <code>Petal.Length</code> and <code>Petal.Width</code>.</p>
+</div>

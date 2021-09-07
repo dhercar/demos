@@ -2,10 +2,10 @@
 header:
   caption: ""
   image: ""
-title: Courses
+title: Tutorials
 type: page
 view: 2
 hidden: true
 ---
 
-I teach the following courses:
+

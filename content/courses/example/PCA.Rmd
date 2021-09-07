@@ -1,0 +1,45 @@
+---
+title: PCA and beautiful biplot
+author: "Daniel Hernández"
+date: 2
+categories: ["PCA"]
+tags: ["PCA", "plot"]
+---
+
+
+<!--more-->
+
+In this tutorial you will learn how to use the ``prcomp`` function to perform a principal component analyses (PCA) and display the results in a fully customizable format. I assume you are familiarized with the theory behind a PCA and have basic R-programming skills. 
+
+## Example data (IRIS)
+
+We are going to use the [iris](https://archive.ics.uci.edu/ml/datasets/iris) dataset as an example. It includes four numerical variables representing four flower characteristics and one categorical variable that corresponds to the taxonomic classification. 
+
+```{r, include=T, echo=T, warning=F}
+data(iris) # Load dataset
+sapply(iris, class) #Check type of variables
+```
+
+## Objective
+
+We want to know:
+
+
+* Whether the variables that describe de flower can be summarized in two numeric axis or not.
+* How variables are correlated among them.
+* If different groups of plants have distinct flower characteristics
+
+
+A good way to inspect the data is to analyse the correlation between variables. For that I like using the ``PerformanceAnalytics`` package. 
+
+```{r}
+
+PerformanceAnalytics:: chart.Correlation(iris[,-5],
+                                         histogram=TRUE, 
+                                         pch=10,
+                                         method = "pearson")
+```
+
+There is a strong correlation between some variables, specially between ``Petal.Length`` and ``Petal.Width``. 
+
+
