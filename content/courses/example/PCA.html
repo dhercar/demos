@@ -1,11 +1,12 @@
 ---
-title: PCA and beautiful biplot
+date: "10/09/2021"
+math: false
+title: PCA in R
 type: book
-highlight: true
-author: "Daniel Hernández"
-date: 2
-categories: ["PCA"]
-tags: ["PCA", "plot"]
+weight: 100
+draft: false
+hidden: false
+output: md_document
 ---
 
 
@@ -17,6 +18,7 @@ tags: ["PCA", "plot"]
 sapply(iris, class) #Check the class of variables</code></pre>
 <pre><code>## Sepal.Length  Sepal.Width Petal.Length  Petal.Width      Species 
 ##    &quot;numeric&quot;    &quot;numeric&quot;    &quot;numeric&quot;    &quot;numeric&quot;     &quot;factor&quot;</code></pre>
+<p><br></p>
 <div id="preparing-the-data" class="section level2">
 <h2>Preparing the data</h2>
 <p>A good way to inspect the data is to analyse the correlation between variables. For that I like using the <code>PerformanceAnalytics</code> package.</p>
@@ -37,6 +39,7 @@ ggplot(stack(data.frame(scale(iris.num))), aes(x=ind, y=values)) +
   geom_jitter(width=0.1, alpha=0.5) #draw points </code></pre>
 <p><img src="/courses/example/PCA_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
 <p>The distribution seem symmetric enough. Otherwise, a proper transformation variables would be needed.</p>
+<p><br></p>
 </div>
 <div id="pca" class="section level2">
 <h2>PCA</h2>
@@ -133,5 +136,75 @@ Cumulative Proportion
   xlab(&quot;PC&quot;)+
   ylab(&quot;Proportion explained (%)&quot;)</code></pre>
 <p><img src="/courses/example/PCA_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
-<p>The first PC axis summarizes a big part of the variance (75%) and adding a second PC allows for includding more than 90% of the variance.</p>
+<p>we obtained <em>n</em> variables - 1 principal components (PC) that include all of the variability in the data.
+The first PC axis summarizes a big part of the variance (&gt;70%) and adding a second PC allows for including more than 9% of the variance.The appropriate number of PC to represent our data we be can be selected using the <em>Kaiser-Guttman</em> criterion, which selects all PC with eigenvalues higher than 1. Just for fun, I will create a little function that automatically selects the optimum number of PC.</p>
+<pre class="r"><code>KG_criterion &lt;- function(df, threshold=1, scale=TRUE, raw.data=TRUE){
+  pca.out&lt;- rda(df,scale= scale)
+  nPC &lt;- sum(ifelse(pca.out$CA$eig&gt;threshold,1,0))
+  print(paste(&quot;Number of dimensions selected using Kaiser-Guttman criterion = &quot;, nPC))
+  }
+
+KG_criterion(df=iris.num)</code></pre>
+<pre><code>## [1] &quot;Number of dimensions selected using Kaiser-Guttman criterion =  1&quot;</code></pre>
+<p>Following this, one PC axis would be enough to represent our data. However, the second PC has an eigenvalue close enough to 0 to still represent the data in 2D, which is preferable.</p>
+<p><br></p>
+</div>
+<div id="levels-of-biplot-from-basic-to-fancy" class="section level2">
+<h2>3 levels of BIPLOT: from basic to fancy</h2>
+<div id="level-1-basic-biplot" class="section level3">
+<h3>Level 1: Basic biplot</h3>
+<p>The <code>autoplot()</code> function of the <code>ggfortify</code> R package is an easy way to obtain PCA biplots that are based on <code>ggplot2</code>. Note that it needs the output of the built-inn function <code>prcomp()</code> instead of the <code>rda()</code> from <code>vegan</code>.</p>
+<pre class="r"><code>library(ggplot2)
+library(ggfortify)
+
+pca.out2&lt;- prcomp(iris.num, scale. = T) 
+
+autoplot(pca.out2,
+         loadings= TRUE,
+         loadings.label=TRUE)</code></pre>
+<p><img src="/courses/example/PCA_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<p><br></p>
+</div>
+<div id="level-2-adding-extra-variables" class="section level3">
+<h3>Level 2: Adding extra variables</h3>
+<p>We can add more information</p>
+<pre class="r"><code> autoplot(pca.out2,  # prcomp output
+         data=iris,  # original data
+         colour= &quot;Species&quot;, # different colour for each species
+         shape= &quot;Species&quot;, # different shape for each species
+         loadings= TRUE, # Add arrows to represent the correlation of the variables with each PC
+         loadings.label=TRUE, # Add labels to each arrow
+         frame=TRUE # indicate the area where the samples of each group are found
+         ) </code></pre>
+<p><img src="/courses/example/PCA_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<p><br></p>
+</div>
+<div id="level-3-customizing-the-plot" class="section level3">
+<h3>Level 3: Customizing the plot</h3>
+<p><code>autoplot()</code> returns a ggplot object so we can add <code>ggplot2</code> functions. For example, we can split the plot using the <code>facet_wrap()</code> function, define a manual colour scale and tweak some theme settings.</p>
+<pre class="r"><code>autoplot(pca.out2,  # prcomp output
+         data=iris,  # original data
+         colour= &quot;Species&quot;, # different colour for each species
+         shape= &quot;Species&quot;, # different shape for each species
+         loadings= TRUE, # Add arrows to represent the correlation of the variables with each PC
+         loadings.label=TRUE, # Add labels to each arrow
+         frame=TRUE # indicate the area where the samples of each group are found
+         ) + # We can use ggplot2 syntax functions
+  theme_bw() + # Change deafault theme 
+  facet_wrap(~Species, ncol=3)+ #split the plot
+  scale_color_manual(values=c(&quot;coral3&quot;, &quot;darkolivegreen&quot;, &quot;steelblue&quot;))+ #manual colours
+  theme(aspect.ratio=1, legend.position= &quot;bottom&quot;, panel.grid = element_blank()) # 1:1 plots</code></pre>
+<p><img src="/courses/example/PCA_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+<p>Adding 2D-density areas is a cool way to visualize differences among groups of variables.</p>
+<pre class="r"><code>autoplot(pca.out2, 
+         data=iris,  
+         colour= &quot;Species&quot;,
+         ) + 
+  theme_bw() + 
+  stat_density_2d(geom=&quot;polygon&quot;,aes(fill=Species), bins=10, alpha=0.1) + # 2D density polygons
+  stat_density_2d(aes(col=Species), bins=10) +  # 2D density lines (make sure to number of bins are equal)
+  scale_color_manual(values=c(&quot;coral3&quot;, &quot;darkolivegreen&quot;, &quot;steelblue&quot;))+ 
+  theme(aspect.ratio=1, legend.position= &quot;bottom&quot;, panel.grid = element_blank()) </code></pre>
+<p><img src="/courses/example/PCA_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+</div>
 </div>
