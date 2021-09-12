@@ -1,5 +1,7 @@
 ---
 title: PCA and beautiful biplot
+type: book
+highlight: true
 author: "Daniel Hernández"
 date: 2
 categories: ["PCA"]
@@ -11,24 +13,14 @@ tags: ["PCA", "plot"]
 
 In this tutorial you will learn how to use the ``prcomp`` function to perform a principal component analyses (PCA) and display the results in a fully customizable format. I assume you are familiarized with the theory behind a PCA and have basic R-programming skills. 
 
-## Example data (IRIS)
-
 We are going to use the [iris](https://archive.ics.uci.edu/ml/datasets/iris) dataset as an example. It includes four numerical variables representing four flower characteristics and one categorical variable that corresponds to the taxonomic classification. 
 
 ```{r, include=T, echo=T, warning=F}
 data(iris) # Load dataset
-sapply(iris, class) #Check type of variables
+sapply(iris, class) #Check the class of variables
 ```
 
-## Objective
-
-We want to know:
-
-
-* Whether the variables that describe de flower can be summarized in two numeric axis or not.
-* How variables are correlated among them.
-* If different groups of plants have distinct flower characteristics
-
+## Preparing the data
 
 A good way to inspect the data is to analyse the correlation between variables. For that I like using the ``PerformanceAnalytics`` package. 
 
@@ -40,6 +32,58 @@ PerformanceAnalytics:: chart.Correlation(iris[,-5],
                                          method = "pearson")
 ```
 
-There is a strong correlation between some variables, specially between ``Petal.Length`` and ``Petal.Width``. 
+There are strong correlations between some variables, specially between ``Petal.Length`` and ``Petal.Width``. For this example we are going to keep both variables, but you could consider removing one when such strong correlations are detected. 
+
+Next, we can visually explore the distribution of the variables.
+```{r}
+library(ggplot2)
+
+iris.num <- iris[,-5] #variables to use in the PCA
+
+
+ggplot(stack(data.frame(scale(iris.num))), aes(x=ind, y=values)) +
+  geom_boxplot(width=0.5) +  #draw boxplot
+  geom_jitter(width=0.1, alpha=0.5) #draw points 
+
+```
+
+The distribution seem symmetric enough. Otherwise, a proper transformation variables would be needed. 
+
+## PCA
+
+We can use the ``vegan`` package to perfoorm a PCA using the ``rda()``function.   
+
+```{r, warning=FALSE, include=TRUE}
+
+library(vegan)
+pca.out <- rda(iris.num, scale=TRUE)
+pca.out$inertia
+```
+
+The result of the PCA has been stored with the name of ``pca.out``. One important aspect of a PCA is the % of variance explained by each principal component, which can be consulted in the ``$CA$eig`` section of the PCA output. 
+
+```{r}
+kableExtra::kable(round(data.frame(summary(pca.out)[6]), 3))
+
+varExp <- pca.out$CA$eig/sum(pca.out$CA$eig)*100 
+
+```
+
+
+```{r}
+ggplot(data.frame(varExp,
+                  PC= substr(names(varExp), 3,5)), 
+       aes(x=as.numeric(PC), y=varExp))+
+    geom_line(col="grey40", size=0.7)+
+  geom_point(colour="coral3", size=3) + 
+  theme(aspect.ratio=0.5)+
+  xlab("PC")+
+  ylab("Proportion explained (%)")
+
+```
+
+
+The first PC axis summarizes a big part of the variance (75%) and adding a second PC allows for includding more than 90% of the variance. 
+
 
 

@@ -1,7 +1,7 @@
 ---
 date: "2021-01-24"
-linkTitle: Data Science
-summary: An example of using Wowchemy's Book layout for publishing online courses.
+linkTitle: Statistical tools for community ecology
+summary: here you will find tutorials about basic statistical methods used to study ecological communities. 
 title: "\U0001F4CA Learn Data Science"
 type: book
 ---
