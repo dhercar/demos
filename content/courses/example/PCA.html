@@ -12,7 +12,7 @@ output: md_document
 
 
 <!--more-->
-<p>In this tutorial you will learn how to use the <code>prcomp</code> function to perform a principal component analyses (PCA) and display the results in a fully customizable format. I assume you are familiarized with the theory behind a PCA and have basic R-programming skills.</p>
+<p>In this tutorial you will learn how to perform a principal component analyses (PCA) and display the results in a fully customizable format. I assume you are familiarized with the theory behind a PCA and have basic R-programming skills.</p>
 <p>We are going to use the <a href="https://archive.ics.uci.edu/ml/datasets/iris">iris</a> dataset as an example. It includes four numerical variables representing four flower characteristics and one categorical variable that corresponds to the taxonomic classification.</p>
 <pre class="r"><code>data(iris) # Load dataset
 sapply(iris, class) #Check the class of variables</code></pre>
@@ -29,14 +29,16 @@ sapply(iris, class) #Check the class of variables</code></pre>
 <p><img src="/courses/example/PCA_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
 <p>There are strong correlations between some variables, specially between <code>Petal.Length</code> and <code>Petal.Width</code>. For this example we are going to keep both variables, but you could consider removing one when such strong correlations are detected.</p>
 <p>Next, we can visually explore the distribution of the variables.</p>
-<pre class="r"><code>library(ggplot2)
+<pre class="r"><code>library(ggplot2) #load ggplot2
+theme_set(theme_bw()) #Change the deafault theme to bw 
 
 iris.num &lt;- iris[,-5] #variables to use in the PCA
 
 
 ggplot(stack(data.frame(scale(iris.num))), aes(x=ind, y=values)) +
   geom_boxplot(width=0.5) +  #draw boxplot
-  geom_jitter(width=0.1, alpha=0.5) #draw points </code></pre>
+  geom_jitter(width=0.1, alpha=0.5)+ #draw points
+  theme_bw()</code></pre>
 <p><img src="/courses/example/PCA_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
 <p>The distribution seem symmetric enough. Otherwise, a proper transformation variables would be needed.</p>
 <p><br></p>
@@ -44,14 +46,10 @@ ggplot(stack(data.frame(scale(iris.num))), aes(x=ind, y=values)) +
 <div id="pca" class="section level2">
 <h2>PCA</h2>
 <p>We can use the <code>vegan</code> package to perfoorm a PCA using the <code>rda()</code>function.</p>
-<pre class="r"><code>library(vegan)</code></pre>
-<pre><code>## Loading required package: permute</code></pre>
-<pre><code>## Loading required package: lattice</code></pre>
-<pre><code>## This is vegan 2.5-7</code></pre>
-<pre class="r"><code>pca.out &lt;- rda(iris.num, scale=TRUE)
-pca.out$inertia</code></pre>
-<pre><code>## [1] &quot;correlations&quot;</code></pre>
-<p>The result of the PCA has been stored with the name of <code>pca.out</code>. One important aspect of a PCA is the % of variance explained by each principal component, which can be consulted in the <code>$CA$eig</code> section of the PCA output.</p>
+<pre class="r"><code>library(vegan)
+pca.out &lt;- rda(iris.num, scale=TRUE)</code></pre>
+<p>The result of the PCA has been stored with the name of <code>pca.out</code>. We obtained <em>n</em> variables - 1 principal components (PC) that include all of the variability in the data.
+The first PC axis summarizes a big part of the variance (&gt;70%) and adding a second PC allows for including more than 9% of the variance.</p>
 <pre class="r"><code>kableExtra::kable(round(data.frame(summary(pca.out)[6]), 3))</code></pre>
 <table>
 <thead>
@@ -126,27 +124,77 @@ Cumulative Proportion
 </tr>
 </tbody>
 </table>
-<pre class="r"><code>varExp &lt;- pca.out$CA$eig/sum(pca.out$CA$eig)*100 </code></pre>
-<pre class="r"><code>ggplot(data.frame(varExp,
-                  PC= substr(names(varExp), 3,5)), 
-       aes(x=as.numeric(PC), y=varExp))+
+<p>One important aspect of a PCA is the % of variance explained by each principal component, which can be consulted in the <code>$CA$eig</code> section of the PCA output. We can use this information to make a plot.</p>
+<pre class="r"><code>Eig &lt;- pca.out$CA$eig #Vector of eigenvalues
+sumEig &lt;- sum(pca.out$CA$eig) #Sum of the eigenvalues (should be equal to the nummber of variables -1)
+
+ggplot(data.frame(Eig,
+                  PC= substr(names(Eig), 3,5)), 
+       aes(x=as.numeric(PC), y=Eig))+
     geom_line(col=&quot;grey40&quot;, size=0.7)+
-  geom_point(colour=&quot;coral3&quot;, size=3) + 
+  geom_point(colour=ifelse(Eig&gt;1,&quot;darkolivegreen&quot;, &quot;coral3&quot;), size=3) + 
   theme(aspect.ratio=0.5)+
   xlab(&quot;PC&quot;)+
-  ylab(&quot;Proportion explained (%)&quot;)</code></pre>
+   scale_y_continuous(
+    name = &quot;Eigenvalue&quot;,
+    sec.axis = sec_axis(trans=~./sumEig*100 , 
+                         name=&quot;Proportion of variance (%)&quot;))</code></pre>
 <p><img src="/courses/example/PCA_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
-<p>we obtained <em>n</em> variables - 1 principal components (PC) that include all of the variability in the data.
-The first PC axis summarizes a big part of the variance (&gt;70%) and adding a second PC allows for including more than 9% of the variance.The appropriate number of PC to represent our data we be can be selected using the <em>Kaiser-Guttman</em> criterion, which selects all PC with eigenvalues higher than 1. Just for fun, I will create a little function that automatically selects the optimum number of PC.</p>
-<pre class="r"><code>KG_criterion &lt;- function(df, threshold=1, scale=TRUE, raw.data=TRUE){
-  pca.out&lt;- rda(df,scale= scale)
-  nPC &lt;- sum(ifelse(pca.out$CA$eig&gt;threshold,1,0))
-  print(paste(&quot;Number of dimensions selected using Kaiser-Guttman criterion = &quot;, nPC))
+<p>The appropriate number of PC to represent our data can be selected using the <em>Kaiser-Guttman</em> criterion, which selects all PC with eigenvalues higher than 1.</p>
+<pre class="r"><code>KG_criterion &lt;- function(df, threshold=1, scale=TRUE, row.data=TRUE){
+  if(row.data==TRUE){
+  df&lt;- rda(df,scale= scale)
   }
+  nPC &lt;- sum(ifelse(df$CA$eig&gt;threshold,1,0))
+  print(paste(&quot;Number of dimensions selected: &quot;, nPC))
+}
 
-KG_criterion(df=iris.num)</code></pre>
-<pre><code>## [1] &quot;Number of dimensions selected using Kaiser-Guttman criterion =  1&quot;</code></pre>
-<p>Following this, one PC axis would be enough to represent our data. However, the second PC has an eigenvalue close enough to 0 to still represent the data in 2D, which is preferable.</p>
+KG_criterion(df=iris.num, row.data= TRUE, scale= TRUE)</code></pre>
+<pre><code>## [1] &quot;Number of dimensions selected:  1&quot;</code></pre>
+<p>The <em>broken stick</em> criterion is another way to select the number of PC by comparing the variability explained by each axis to ordered random proportions. Those random proportions can be calculated with the <code>bstick()</code> function.</p>
+<pre class="r"><code>bstick &lt;- bstick(pca.out)
+
+
+bstick_criterion &lt;- function(df, scale=TRUE, row.data=TRUE){
+  if(row.data==TRUE){
+  df&lt;- rda(df,scale= scale)
+  }
+  
+  EigV &lt;- df$CA$eig
+  bstick &lt;- bstick(df)
+  
+  nPC &lt;- sum(ifelse(EigV&gt;bstick,1,0))
+  #Print a table
+  print(t(data.frame(bstick=bstick,
+                     eigval=EigV,
+                      selected=ifelse(EigV&gt;bstick,&quot;YES&quot;,&quot;NO&quot;))))
+  #Print the number of PC selected
+  print(paste(&quot;Number of dimensions selected: &quot;, nPC))
+}
+
+bstick_criterion(df=iris.num, row.data= TRUE, scale= TRUE)</code></pre>
+<pre><code>##          PC1          PC2          PC3          PC4         
+## bstick   &quot;2.0833333&quot;  &quot;1.0833333&quot;  &quot;0.5833333&quot;  &quot;0.2500000&quot; 
+## eigval   &quot;2.91849782&quot; &quot;0.91403047&quot; &quot;0.14675688&quot; &quot;0.02071484&quot;
+## selected &quot;YES&quot;        &quot;NO&quot;         &quot;NO&quot;         &quot;NO&quot;        
+## [1] &quot;Number of dimensions selected:  1&quot;</code></pre>
+<p>In the following graph i plot both criteria:</p>
+<pre class="r"><code>ggplot(data.frame(Eig,PC= substr(names(Eig), 3,5),bstick), 
+       aes(x=as.numeric(PC), y=Eig))+
+  geom_col(aes(y=bstick), 
+           fill= ifelse(bstick&lt;Eig,&quot;darkolivegreen&quot;,&quot;coral3&quot;),
+           col=&quot;grey50&quot;,alpha=0.2)+
+  geom_line(col=&quot;grey40&quot;, size=1)+
+  geom_point(colour=ifelse(Eig&gt;1,&quot;darkolivegreen&quot;, &quot;coral3&quot;), size=3) + 
+  theme(aspect.ratio=0.5)+
+  xlab(&quot;PC&quot;)+
+  scale_y_continuous(
+    name = &quot;Eigenvalue&quot;,
+    sec.axis = sec_axis(trans=~./sumEig*100 , 
+                         name=&quot;Proportion of variance (%)&quot;))+
+  geom_hline(yintercept=1, col=&quot;coral3&quot;, lty=2)</code></pre>
+<p><img src="/courses/example/PCA_files/figure-html/unnamed-chunk-9-1.png" width="672" />
+Following this, one PC axis would be enough to represent our data. However, the second PC has an eigenvalue close enough to 0 to still represent the data in 2D, which is preferable.</p>
 <p><br></p>
 </div>
 <div id="levels-of-biplot-from-basic-to-fancy" class="section level2">
@@ -154,15 +202,14 @@ KG_criterion(df=iris.num)</code></pre>
 <div id="level-1-basic-biplot" class="section level3">
 <h3>Level 1: Basic biplot</h3>
 <p>The <code>autoplot()</code> function of the <code>ggfortify</code> R package is an easy way to obtain PCA biplots that are based on <code>ggplot2</code>. Note that it needs the output of the built-inn function <code>prcomp()</code> instead of the <code>rda()</code> from <code>vegan</code>.</p>
-<pre class="r"><code>library(ggplot2)
-library(ggfortify)
+<pre class="r"><code>library(ggfortify)
 
 pca.out2&lt;- prcomp(iris.num, scale. = T) 
 
 autoplot(pca.out2,
          loadings= TRUE,
          loadings.label=TRUE)</code></pre>
-<p><img src="/courses/example/PCA_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<p><img src="/courses/example/PCA_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
 <p><br></p>
 </div>
 <div id="level-2-adding-extra-variables" class="section level3">
@@ -176,7 +223,7 @@ autoplot(pca.out2,
          loadings.label=TRUE, # Add labels to each arrow
          frame=TRUE # indicate the area where the samples of each group are found
          ) </code></pre>
-<p><img src="/courses/example/PCA_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<p><img src="/courses/example/PCA_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
 <p><br></p>
 </div>
 <div id="level-3-customizing-the-plot" class="section level3">
@@ -194,7 +241,7 @@ autoplot(pca.out2,
   facet_wrap(~Species, ncol=3)+ #split the plot
   scale_color_manual(values=c(&quot;coral3&quot;, &quot;darkolivegreen&quot;, &quot;steelblue&quot;))+ #manual colours
   theme(aspect.ratio=1, legend.position= &quot;bottom&quot;, panel.grid = element_blank()) # 1:1 plots</code></pre>
-<p><img src="/courses/example/PCA_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+<p><img src="/courses/example/PCA_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
 <p>Adding 2D-density areas is a cool way to visualize differences among groups of variables.</p>
 <pre class="r"><code>autoplot(pca.out2, 
          data=iris,  
@@ -205,6 +252,6 @@ autoplot(pca.out2,
   stat_density_2d(aes(col=Species), bins=10) +  # 2D density lines (make sure to number of bins are equal)
   scale_color_manual(values=c(&quot;coral3&quot;, &quot;darkolivegreen&quot;, &quot;steelblue&quot;))+ 
   theme(aspect.ratio=1, legend.position= &quot;bottom&quot;, panel.grid = element_blank()) </code></pre>
-<p><img src="/courses/example/PCA_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+<p><img src="/courses/example/PCA_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
 </div>
 </div>

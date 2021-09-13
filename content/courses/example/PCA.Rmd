@@ -11,7 +11,7 @@ output: md_document
 
 <!--more-->
 
-In this tutorial you will learn how to use the ``prcomp`` function to perform a principal component analyses (PCA) and display the results in a fully customizable format. I assume you are familiarized with the theory behind a PCA and have basic R-programming skills. 
+In this tutorial you will learn how to perform a principal component analyses (PCA) and display the results in a fully customizable format. I assume you are familiarized with the theory behind a PCA and have basic R-programming skills. 
 
 We are going to use the [iris](https://archive.ics.uci.edu/ml/datasets/iris) dataset as an example. It includes four numerical variables representing four flower characteristics and one categorical variable that corresponds to the taxonomic classification. 
 
@@ -37,19 +37,21 @@ PerformanceAnalytics:: chart.Correlation(iris[,-5],
 There are strong correlations between some variables, specially between ``Petal.Length`` and ``Petal.Width``. For this example we are going to keep both variables, but you could consider removing one when such strong correlations are detected. 
 
 Next, we can visually explore the distribution of the variables.
-```{r}
-library(ggplot2)
+```{r, warning = FALSE}
+library(ggplot2) #load ggplot2
+theme_set(theme_bw()) #Change the deafault theme to bw 
 
 iris.num <- iris[,-5] #variables to use in the PCA
 
 
 ggplot(stack(data.frame(scale(iris.num))), aes(x=ind, y=values)) +
   geom_boxplot(width=0.5) +  #draw boxplot
-  geom_jitter(width=0.1, alpha=0.5) #draw points 
+  geom_jitter(width=0.1, alpha=0.5)+ #draw points
+  theme_bw()
 
 ```
 
-The distribution seem symmetric enough. Otherwise, a proper transformation variables would be needed. 
+The distribution seem symmetric enough. Otherwise, a proper variable transformation would be necessary. 
 
 <br>
 
@@ -57,73 +59,137 @@ The distribution seem symmetric enough. Otherwise, a proper transformation varia
 
 We can use the ``vegan`` package to perfoorm a PCA using the ``rda()``function.   
 
-```{r, warning=FALSE, include=TRUE}
+```{r, warning=FALSE, include=TRUE, message=FALSE}
 
 library(vegan)
 pca.out <- rda(iris.num, scale=TRUE)
-pca.out$inertia
 ```
 
-The result of the PCA has been stored with the name of ``pca.out``. One important aspect of a PCA is the % of variance explained by each principal component, which can be consulted in the ``$CA$eig`` section of the PCA output. 
+The result of the PCA has been stored with the name ``pca.out``. We obtained _n_ variables - 1 principal components (PC) that include all the variability in the data. 
+The first PC axis summarizes a big part of the variance (>70%) and adding a second PC allows for including more than 9% of the variance.
 
 ```{r}
 kableExtra::kable(round(data.frame(summary(pca.out)[6]), 3))
 
-varExp <- pca.out$CA$eig/sum(pca.out$CA$eig)*100 
 
 ```
 
+
+One important aspect of a PCA is the % of variance explained by each principal component, which can be consulted in the ``$CA$eig`` section of the PCA output. We can use this information to make a plot.
+
+
 ```{r}
-ggplot(data.frame(varExp,
-                  PC= substr(names(varExp), 3,5)), 
-       aes(x=as.numeric(PC), y=varExp))+
-    geom_line(col="grey40", size=0.7)+
+
+Eig <- pca.out$CA$eig #Vector of eigenvalues
+sumEig <- sum(pca.out$CA$eig) #Sum of the eigenvalues (should be equal to the nummber of variables -1)
+
+ggplot(data.frame(Eig,PC= substr(names(Eig), 3,5)), 
+       aes(x=as.numeric(PC), y=Eig))+
+  geom_line(col="grey40", size=0.7)+
   geom_point(colour="coral3", size=3) + 
   theme(aspect.ratio=0.5)+
   xlab("PC")+
-  ylab("Proportion explained (%)")
+  scale_y_continuous(
+    name = "Eigenvalue",
+    sec.axis = sec_axis(trans=~./sumEig*100 , 
+                         name="Proportion of variance (%)"))
 
 ```
 
-we obtained _n_ variables - 1 principal components (PC) that include all of the variability in the data. 
-The first PC axis summarizes a big part of the variance (>70%) and adding a second PC allows for including more than 9% of the variance.The appropriate number of PC to represent our data we be can be selected using the _Kaiser-Guttman_ criterion, which selects all PC with eigenvalues higher than 1. Just for fun, I will create a little function that automatically selects the optimum number of PC. 
+ The appropriate number of PC to represent our data can be selected using the _Kaiser-Guttman_ criterion, which selects all PC with eigenvalues higher than 1. 
 
 ```{r}
 
+#row.data = TRUE allows you to input the variables directly. 
 
-KG_criterion <- function(df, threshold=1, scale=TRUE, raw.data=TRUE){
-  pca.out<- rda(df,scale= scale)
-  nPC <- sum(ifelse(pca.out$CA$eig>threshold,1,0))
-  print(paste("Number of dimensions selected using Kaiser-Guttman criterion = ", nPC))
+KG_criterion <- function(df, threshold=1, scale=TRUE, row.data=TRUE){
+  if(row.data==TRUE){
+  df<- rda(df,scale= scale)
   }
+  nPC <- sum(ifelse(df$CA$eig>threshold,1,0))
+  print(paste("Number of dimensions selected: ", nPC))
+}
 
-KG_criterion(df=iris.num)
+KG_criterion(df=iris.num, row.data= TRUE, scale= TRUE)
+
 
 ```
 
-Following this, one PC axis would be enough to represent our data. However, the second PC has an eigenvalue close enough to 0 to still represent the data in 2D, which is preferable. 
+
+The _broken stick_ criterion is another way to select the number of PC by comparing the variability explained by each axis to ordered random proportions. Those random proportions can be calculated with the ``bstick()`` function. 
+
+```{r}
+
+bstick <- bstick(pca.out)
+
+
+bstick_criterion <- function(df, scale=TRUE, row.data=TRUE){
+  if(row.data==TRUE){
+  df<- rda(df,scale= scale)
+  }
+  
+  EigV <- df$CA$eig
+  bstick <- bstick(df)
+  
+  nPC <- sum(ifelse(EigV>bstick,1,0))
+  #Print a table
+  print(t(data.frame(bstick=bstick,
+                     eigval=EigV,
+                      selected=ifelse(EigV>bstick,"YES","NO"))))
+  #Print the number of PC selected
+  print(paste("Number of dimensions selected: ", nPC))
+}
+
+bstick_criterion(df=iris.num, row.data= TRUE, scale= TRUE)
+
+
+```
+
+
+In the following graph i plot both criteria:
+
+
+```{r}
+
+ggplot(data.frame(Eig,PC= substr(names(Eig), 3,5),bstick), 
+       aes(x=as.numeric(PC), y=Eig))+
+  geom_col(aes(y=bstick), 
+           fill= ifelse(bstick<Eig,"darkolivegreen","coral3"),
+           col="grey50",alpha=0.2)+
+  geom_line(col="grey40", size=1)+
+  geom_point(colour=ifelse(Eig>1,"darkolivegreen", "coral3"), size=3) + 
+  theme(aspect.ratio=0.5)+
+  xlab("PC")+
+  scale_y_continuous(
+    name = "Eigenvalue",
+    sec.axis = sec_axis(trans=~./sumEig*100 , 
+                         name="Proportion of variance (%)"))+
+  geom_hline(yintercept=1, col="coral3", lty=2)
+
+```
+Following this, one PC axis would be enough to represent our data. However, the second PC has an eigenvalue close enough to 1 to still represent the data in 2D, which is preferable. 
 
 
 <br>
 
 ## 3 levels of BIPLOT: from basic to fancy
 
+Now it is time to represent our data using the principal components obtained. 
+
 ### Level 1: Basic biplot
 
-The ``autoplot()`` function of the ``ggfortify`` R package is an easy way to obtain PCA biplots that are based on ``ggplot2``.  Note that it needs the output of the built-inn function ``prcomp()`` instead of the ``rda()`` from ``vegan``. 
+The ``autoplot()`` function of the ``ggfortify`` R package is an convenient way to obtain ``ggplot2`` based PCA biplots.  Note that it needs the output of the built-inn function ``prcomp()`` instead of the ``rda()`` from ``vegan``. 
 
 ```{r}
-library(ggplot2)
 library(ggfortify)
 
 pca.out2<- prcomp(iris.num, scale. = T) 
-
 autoplot(pca.out2,
          loadings= TRUE,
          loadings.label=TRUE)
 ```
 
-<br>
+And here we have it! The strong correlation between the length and the width of the petal are visible. 
 
 ### Level 2: Adding extra variables
 

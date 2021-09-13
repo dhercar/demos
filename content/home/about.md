@@ -12,13 +12,13 @@ headless: true
 # Order that this section appears on the page.
 weight: 20
 
-title: Biography
+title: About me
 design:
-  columns: "1"
+  columns: "2"
   background:
-    image: fons.jpg
-    image_darken: 0.4
-    image_parallax: true
+    image: net.jpg
+    image_darken: 0.2
+    image_parallax: false
     image_position: center
     image_size: cover
     text_color_light: true

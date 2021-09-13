@@ -46,4 +46,4 @@ superuser: yes
 bio: I sdfasdf
 ---
 
-{{< icon name="download" pack="fas" >}} Download my {{< staticref "uploads/demo_resume.pdf" "newtab" >}}resumé{{< /staticref >}}.
+{{< icon name="download" pack="fas" >}} {{< staticref "uploads/CV.html" "newtab" >}} See{{< /staticref >}} or {{< staticref "uploads/CV.html" "newtab" >}}download{{< /staticref >}} my CV.
