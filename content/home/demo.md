@@ -9,7 +9,7 @@ active: true
 headless: false
 
 # Order that this section appears on the page.
-weight: 12
+weight: 1
 
 title: 
 subtitle: 
@@ -17,8 +17,8 @@ subtitle:
 design:
   columns: "2"
   background:
-    image: fons.jpg
-    image_darken: 0.8
+    image: bg.jpg
+    image_darken: 0.5
     image_parallax: true
     image_position: center
     image_size: cover

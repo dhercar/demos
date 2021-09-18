@@ -1,0 +1,15 @@
+---
+date: "2021-09-15"
+highlight: true
+title: Do biotic interactions affect ecosystem stability? 
+subtitle: Simulating interaction networks in R. 
+type: book
+weight: 30
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+

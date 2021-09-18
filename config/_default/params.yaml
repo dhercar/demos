@@ -5,7 +5,7 @@
 
 # Appearance
 
-theme: minimal
+theme: earth2
 day_night: true
 font: ''
 font_size: L
@@ -36,10 +36,10 @@ directions:
 office_hours:
 
 contact_links:
-  - icon: twitter
-    icon_pack: fab
-    name: DM Me
-    link: 'https://twitter.com/Twitter'
+  - icon: 
+    icon_pack: 
+    name: 
+    link: 
 
 
 # Site header
@@ -85,7 +85,7 @@ show_related:
   publication: true
   event: true
 reading_time: true
-section_pager: false
+section_pager: true
 docs_section_pager: true
 sharing: true
 copyright_license:

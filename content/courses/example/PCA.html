@@ -7,6 +7,7 @@ weight: 100
 draft: false
 hidden: false
 output: md_document
+tags: ['PCA', 'R', 'tutorial']
 ---
 
 
@@ -40,7 +41,7 @@ ggplot(stack(data.frame(scale(iris.num))), aes(x=ind, y=values)) +
   geom_jitter(width=0.1, alpha=0.5)+ #draw points
   theme_bw()</code></pre>
 <p><img src="/courses/example/PCA_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
-<p>The distribution seem symmetric enough. Otherwise, a proper transformation variables would be needed.</p>
+<p>The distribution seem symmetric enough. Otherwise, a proper variable transformation would be necessary.</p>
 <p><br></p>
 </div>
 <div id="pca" class="section level2">
@@ -48,7 +49,7 @@ ggplot(stack(data.frame(scale(iris.num))), aes(x=ind, y=values)) +
 <p>We can use the <code>vegan</code> package to perfoorm a PCA using the <code>rda()</code>function.</p>
 <pre class="r"><code>library(vegan)
 pca.out &lt;- rda(iris.num, scale=TRUE)</code></pre>
-<p>The result of the PCA has been stored with the name of <code>pca.out</code>. We obtained <em>n</em> variables - 1 principal components (PC) that include all of the variability in the data.
+<p>The result of the PCA has been stored with the name <code>pca.out</code>. We obtained <em>n</em> variables - 1 principal components (PC) that include all the variability in the data.
 The first PC axis summarizes a big part of the variance (&gt;70%) and adding a second PC allows for including more than 9% of the variance.</p>
 <pre class="r"><code>kableExtra::kable(round(data.frame(summary(pca.out)[6]), 3))</code></pre>
 <table>
@@ -128,20 +129,21 @@ Cumulative Proportion
 <pre class="r"><code>Eig &lt;- pca.out$CA$eig #Vector of eigenvalues
 sumEig &lt;- sum(pca.out$CA$eig) #Sum of the eigenvalues (should be equal to the nummber of variables -1)
 
-ggplot(data.frame(Eig,
-                  PC= substr(names(Eig), 3,5)), 
+ggplot(data.frame(Eig,PC= substr(names(Eig), 3,5)), 
        aes(x=as.numeric(PC), y=Eig))+
-    geom_line(col=&quot;grey40&quot;, size=0.7)+
-  geom_point(colour=ifelse(Eig&gt;1,&quot;darkolivegreen&quot;, &quot;coral3&quot;), size=3) + 
+  geom_line(col=&quot;grey40&quot;, size=0.7)+
+  geom_point(colour=&quot;coral3&quot;, size=3) + 
   theme(aspect.ratio=0.5)+
   xlab(&quot;PC&quot;)+
-   scale_y_continuous(
+  scale_y_continuous(
     name = &quot;Eigenvalue&quot;,
     sec.axis = sec_axis(trans=~./sumEig*100 , 
                          name=&quot;Proportion of variance (%)&quot;))</code></pre>
 <p><img src="/courses/example/PCA_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
 <p>The appropriate number of PC to represent our data can be selected using the <em>Kaiser-Guttman</em> criterion, which selects all PC with eigenvalues higher than 1.</p>
-<pre class="r"><code>KG_criterion &lt;- function(df, threshold=1, scale=TRUE, row.data=TRUE){
+<pre class="r"><code>#row.data = TRUE allows you to input the variables directly. 
+
+KG_criterion &lt;- function(df, threshold=1, scale=TRUE, row.data=TRUE){
   if(row.data==TRUE){
   df&lt;- rda(df,scale= scale)
   }
@@ -194,23 +196,23 @@ bstick_criterion(df=iris.num, row.data= TRUE, scale= TRUE)</code></pre>
                          name=&quot;Proportion of variance (%)&quot;))+
   geom_hline(yintercept=1, col=&quot;coral3&quot;, lty=2)</code></pre>
 <p><img src="/courses/example/PCA_files/figure-html/unnamed-chunk-9-1.png" width="672" />
-Following this, one PC axis would be enough to represent our data. However, the second PC has an eigenvalue close enough to 0 to still represent the data in 2D, which is preferable.</p>
+Following this, one PC axis would be enough to represent our data. However, the second PC has an eigenvalue close enough to 1 to still represent the data in 2D, which is preferable.</p>
 <p><br></p>
 </div>
 <div id="levels-of-biplot-from-basic-to-fancy" class="section level2">
 <h2>3 levels of BIPLOT: from basic to fancy</h2>
+<p>Now it is time to represent our data using the principal components obtained.</p>
 <div id="level-1-basic-biplot" class="section level3">
 <h3>Level 1: Basic biplot</h3>
-<p>The <code>autoplot()</code> function of the <code>ggfortify</code> R package is an easy way to obtain PCA biplots that are based on <code>ggplot2</code>. Note that it needs the output of the built-inn function <code>prcomp()</code> instead of the <code>rda()</code> from <code>vegan</code>.</p>
+<p>The <code>autoplot()</code> function of the <code>ggfortify</code> R package is an convenient way to obtain <code>ggplot2</code> based PCA biplots. Note that it needs the output of the built-inn function <code>prcomp()</code> instead of the <code>rda()</code> from <code>vegan</code>.</p>
 <pre class="r"><code>library(ggfortify)
 
 pca.out2&lt;- prcomp(iris.num, scale. = T) 
-
 autoplot(pca.out2,
          loadings= TRUE,
          loadings.label=TRUE)</code></pre>
 <p><img src="/courses/example/PCA_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
-<p><br></p>
+<p>And here we have it! The strong correlation between the length and the width of the petal are visible.</p>
 </div>
 <div id="level-2-adding-extra-variables" class="section level3">
 <h3>Level 2: Adding extra variables</h3>

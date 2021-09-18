@@ -7,6 +7,7 @@ weight: 100
 draft: false
 hidden: false
 output: md_document
+tags: ['PCA', 'R', 'tutorial']
 ---
 
 <!--more-->

@@ -43,7 +43,8 @@ social:
   icon_pack: fab
   link: https://www.linkedin.com/in/dani-hernandez-b907531ba/
 superuser: yes
-bio: I sdfasdf
+bio:
 ---
-
-{{< icon name="download" pack="fas" >}} {{< staticref "uploads/CV.html" "newtab" >}} See{{< /staticref >}} or {{< staticref "uploads/CV.html" "newtab" >}}download{{< /staticref >}} my CV.
+ I am a biologist and environmental scientist interested in the application of statistical analyses and computational methods to model natural systems. 
+ 
+{{< icon name="download" pack="fas" >}} {{< staticref "uploads/CV.html" "newtab" >}} See{{< /staticref >}} or {{< staticref "uploads/CV.pdf" "newtab" >}}download{{< /staticref >}} my CV.

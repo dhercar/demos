@@ -1,0 +1,27 @@
+---
+date: "2021-09-15"
+highlight: true
+title: Do biotic interactions affect ecosystem stability? 
+subtitle: Simulating interaction networks in R. 
+type: book
+weight: 30
+bibliography: mybibfile.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+### Context <i class="fa fa-map-marked-alt"></i>
+This post is inspired by an assignment I did with [Yanis Zentner](https://www.linkedin.com/in/yaniszentnermurlans/?originalSubdomain=es) during my  [MS in Ecology](https://www.ub.edu/web/ub/en/estudis/oferta_formativa/master_universitari/fitxa/E/M2203/index.html).  We were ask to submit an abstract and prepare a talk pretending we were in a scientific congress about biotic interactions. Inspired by @mccann2000diversity , we decided to investigate about the relationship between interactions and ecosystem stability. We were supposed to do some bibliographic research, which we did, but I couldn't stand the chance of replicating and manipulating the simulations I was reading about.
+
+
+## Introduction
+
+When a natural ecosystem is free from perturbation it reaches a stable state where every species abundance stays the same... or does it???
+
+<center>
+<iframe width="600" height="430" src="https://www.youtube.com/embed/G4qt5cSSf9Q" frameborder="0" allow="accelerometer; autoplay=1; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</center>
+

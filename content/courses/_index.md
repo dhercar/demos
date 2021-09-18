@@ -5,7 +5,7 @@ header:
 title: Tutorials
 type: page
 view: 2
-hidden: true
+hidden: false
 ---
 
 

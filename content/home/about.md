@@ -10,15 +10,15 @@ active: true
 headless: true
 
 # Order that this section appears on the page.
-weight: 20
+weight: 14
 
 title: About me
 design:
   columns: "2"
   background:
-    image: net.jpg
-    image_darken: 0.2
-    image_parallax: false
+    image: featured.jpg
+    image_darken: 0.5
+    image_parallax: true
     image_position: center
     image_size: cover
     text_color_light: true
