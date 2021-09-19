@@ -5,7 +5,6 @@ title: PCA in R
 type: book
 weight: 100
 draft: false
-hidden: false
 output: md_document
 tags: ['PCA', 'R', 'tutorial']
 ---
@@ -13,7 +12,7 @@ tags: ['PCA', 'R', 'tutorial']
 
 
 <!--more-->
-<p>In this tutorial you will learn how to perform a principal component analyses (PCA) and display the results in a fully customizable format. I assume you are familiarized with the theory behind a PCA and have basic R-programming skills.</p>
+<p>In this tutorial I show how to perform a principal component analyses (PCA) and display the results in a fully customizable format. I assume you are familiarized with the theory behind a PCA and have basic R-programming skills.</p>
 <p>We are going to use the <a href="https://archive.ics.uci.edu/ml/datasets/iris">iris</a> dataset as an example. It includes four numerical variables representing four flower characteristics and one categorical variable that corresponds to the taxonomic classification.</p>
 <pre class="r"><code>data(iris) # Load dataset
 sapply(iris, class) #Check the class of variables</code></pre>
@@ -41,7 +40,7 @@ ggplot(stack(data.frame(scale(iris.num))), aes(x=ind, y=values)) +
   geom_jitter(width=0.1, alpha=0.5)+ #draw points
   theme_bw()</code></pre>
 <p><img src="/courses/example/PCA_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
-<p>The distribution seem symmetric enough. Otherwise, a proper variable transformation would be necessary.</p>
+<p>The distributions seem symmetric enough. Otherwise, a proper variable transformation would be necessary.</p>
 <p><br></p>
 </div>
 <div id="pca" class="section level2">

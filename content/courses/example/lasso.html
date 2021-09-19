@@ -1,0 +1,79 @@
+---
+date: "13/09/2021"
+math: false
+title: Statistically inference of biotic interactions
+type: book
+weight: 100
+draft: false
+hidden: false
+output: md_document
+tags: ['R', 'tutorial', "Interactions", "lasso"]
+---
+
+
+
+<p>It is often assumed that 3 main filters constrain the composition and structure of natural ecological communities.</p>
+<ul>
+<li><p><strong>Dispersal filter</strong>: A species that is not capable of physically reaching an specific habitat due to dispersal limitations will not be found there.</p></li>
+<li><p><strong>Environmental filter</strong>: Organismal groups will be filtered depending of their capabilities for surviving and thriving in the specific environmental conditions of the habitat.</p></li>
+<li><p><strong>Interaction filter</strong>: The community structure and composition will also depend on the result of the interactions that are established among organisms.</p></li>
+</ul>
+<p>When using the classic B-diversity-based methods to asses the relative importance of each filter (e.g., variance partitioning) it is not possible to include the <em>interaction filter</em>, which may generate poor results and erroneous interpretations.</p>
+<p>A possible solution is the construction of <strong>BAIN</strong>s (Biotic Abiotic Interaction Networks) using partial correlation networks with <em>lasso</em> penalty (graphical lasso).</p>
+<div id="generating-correlated-data" class="section level2">
+<h2>Generating correlated data</h2>
+<p>As an example, I simulated 4 species (sp) and 2 environmental variables (Env).
+In ecological systems, environmental variables are often correlated and a PCA can be performed to obtain a few non-correlated meaningful axes. These axes can then replace the original environmental variables in the model to avoid unnecessary complexity. In the same way, species could be grouped by their taxonomical groups or functional traits.</p>
+<pre class="r"><code>set.seed(2)
+n = 100 #sample size
+
+Env1 &lt;- rnorm(n)
+Env2 &lt;- rnorm(n)
+
+sp1 &lt;- Env1*0.3 + rnorm(n,0,0.2)
+sp2 &lt;- Env2*0.3 + rnorm(n,0,0.3)
+sp3 &lt;- sp1*0.2 - sp2*0.3 + rnorm(n,0,0.2)
+sp4 &lt;- sp3*0.5- Env1*0.2 +rnorm(n,0,0.2)
+
+data &lt;- data.frame(Env1,Env2,sp1,sp2,sp3,sp4)</code></pre>
+<p>The predicted network should look something like this:</p>
+<pre class="r"><code>int &lt;- matrix( c(0,  0,  1,  0, 0,  -1,
+                 0,  0,  0,  1,  0,  0,
+                 1,  0,  0,  0,  1,  0,
+                 0,  1,  0,  0, -1,  0,
+                 0,  0,  1,  -1, 0,  1,
+                 -1, 0,  0,  0,  1,  0), ncol=6) 
+
+qgraph::qgraph( int,
+               edge.color = ifelse(int&gt;0,&quot;steelblue&quot;, &quot;coral3&quot;),
+                vsize=10, esize=10,labels=names(data), layout=&quot;circle&quot;, 
+                nodeNames = names(data),borders=T,
+               font=6, edge.label.cex=1,legend=FALSE)</code></pre>
+<p><img src="/courses/example/lasso_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+</div>
+<div id="assessing-multivariate-normality" class="section level2">
+<h2>Assessing multivariate normality</h2>
+<p>Gaussian models assume multivariate normality. We can check it as follows:</p>
+<pre class="r"><code> MVN::mvn(data = scale(data), mvnTest = &quot;hz&quot;)[1]  </code></pre>
+<pre><code>## $multivariateNormality
+##            Test        HZ    p value MVN
+## 1 Henze-Zirkler 0.9978895 0.03924906  NO</code></pre>
+<p>In our case, all variables were simulated from a normal distribution so they follow a multivariate-normal distribution. If the assumption of multivariate normality is violated (which is usual when dealing with abundance data), the following nonparanormal transformation can be applied.</p>
+<pre class="r"><code> data.trans &lt;- data.frame(huge::huge.npn(data, npn.func = &quot;shrinkage&quot;, npn.thresh = NULL,
+  verbose = TRUE))</code></pre>
+<pre><code>## Conducting the nonparanormal (npn) transformation via shrunkun ECDF....done.</code></pre>
+</div>
+<div id="infering-partial-correlation-networks" class="section level2">
+<h2>Infering partial correlation networks</h2>
+<p>To obtain the BAIN we will use the <code>mgm</code> package. the <code>mgm()</code> function returns a mixed graphical model. <code>Mixed</code> has nothing to do with random factors, it indicates that different kind of variables (e.g., Faussian or categorical) can be used.</p>
+<p>The variable type is indicated with <code>type</code>. In the example all variables are Gaussian so we provide a vector with as many “g” as variables are introduced in them model. The <code>level</code> argument indicates the number of categories for each variables and it is set a 1 for non-categorical variables. To understand the rest of the parameters I strongly recommend reading the <a href="https://arxiv.org/pdf/1510.06871.pdf">publication</a> about the package.</p>
+<p>The model has been created and stored with the name <code>fit_mgm</code>.</p>
+<p>Plot of the the results:</p>
+<pre class="r"><code>qgraph::qgraph(fit_mgm$pairwise$wadj,
+               edge.color = fit_mgm$pairwise$edgecolor,
+                vsize=10, esize=10,labels=names(data), layout=&quot;circle&quot;, 
+                nodeNames = names(data),borders=T,
+               font=6, edge.label.cex=1,legend=FALSE)</code></pre>
+<p><img src="/courses/example/lasso_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<p>We see the model detected all the underlying interactions in the data. However, it also detected two false no-null interactions (sp3-env1, sp3-env2).</p>
+</div>

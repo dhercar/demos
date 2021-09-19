@@ -22,9 +22,9 @@ interests:
 - R programming
 
 organizations:
-- name: Universitat de Girona
-  url: https://www.udg.edu/
-role: PHD student
+- name:
+  url:
+role: 
 
 social:
 - icon: envelope
@@ -47,4 +47,4 @@ bio:
 ---
  I am a biologist and environmental scientist interested in the application of statistical analyses and computational methods to model natural systems. 
  
-{{< icon name="download" pack="fas" >}} {{< staticref "uploads/CV.html" "newtab" >}} See{{< /staticref >}} or {{< staticref "uploads/CV.pdf" "newtab" >}}download{{< /staticref >}} my CV.
+{{< icon name="download" pack="fas" >}} {{< staticref "uploads/CV.html" "newtab" >}} See{{< /staticref >}} my CV.

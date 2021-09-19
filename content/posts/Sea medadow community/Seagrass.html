@@ -1,0 +1,535 @@
+---
+date: "2021-09-15"
+highlight: true
+title: Simulating a Seagrass community
+subtitle:
+math: true
+draft: false
+hidden: false
+output: md_document
+type: book
+weight: 30
+---
+
+
+
+<p><font size="4.5"></p>
+<div id="introduction-k" class="section level2">
+<h2>Introduction k</h2>
+<div style="text-align: justify">
+<p>In this document, the direct and indirect interactions among the species of a theoretical community are studied form a theoretical perspective. A simulation has been created observe the system behaviour. To put some context, the interacting species are some of the commonly found in a Mediterranean seagrass meadow dominated by <em>Posidonia oceanica</em>.</p>
+<p>The most common interaction has been set to be competence for resources. Two clusters of organisms are observed for this interaction: The primary producers and all filtering organisms. The former cluster integrates <em>Cymodocea nodosa (c_nod)</em>, <em>Halophyla stipulacea (h_sti)</em> and <em>Posidonia oceanica (p_oce) </em>, but red algae <em>(alga)</em> could also compete for resources such as light when the seagrass growth is too high. However, as the seagrass stabilizes the sandbed, allowing benthic organisms like red algae to proliferate, the relationship of red algae with all three seagrass species is taken to be positive. In addition, epibiontic <em>(epib)</em> organisms may also interact with <em>P. oceanica</em> by blocking the light and nutrient exchange and enhancing predatory pressure. Thus, the interaction is set to be negative. The latter cluster created by competence interactions involves all 5 filtering organisms ( epibiontic organisms, sponges <em>(pori)</em>, <em>Pinna nobilis (p_nob)</em>, bivalve <em>(biva)</em> and sabellida polychaeta <em>(espi)</em>).</p>
+<p>All three seagrass species have been considered to provide a suitable habitat not only for the red algae but also for <em>P. nobilis</em>, porifera and sabellida. This has been represented as a positive facilitation interaction. In the case of epibiontic organisms, only <em>P. oceanica</em> has been set to provide this kind of positive interaction due to the longevity of their leafs and its slower growth compared to <em>C. nodosa</em> and <em>H. stipulacea</em>.</p>
+<p>Finally, a predator - prey interaction takes place between the sea urchin <em>Paracentrotus lividus (p_liv)</em> and all plant organisms ( the three seagrass species and the red algae).</p>
+</div>
+</div>
+<div id="interaction-matrix" class="section level2">
+<h2><strong>Interaction matrix</strong></h2>
+Due to the theoretical and academic porpoise of this work, all weights are simply taken to be +1, 0 or -1. As before, columns represent the agent and rows the subjects of the interaction.
+</div>
+<p><br></p>
+<p><font size="3"></p>
+<p><span class="math display">\[ \begin{bmatrix} &amp; c nod &amp; h sti &amp; p oce &amp; epib &amp; pori &amp; p nob &amp; biva &amp; espi &amp; p liv &amp; alga\\
+c nod &amp; 0 &amp;      -1 &amp;       -1 &amp;      0 &amp;     0 &amp;       0 &amp;      0 &amp;      0 &amp;      -1 &amp;      0\\
+h sti &amp; -1 &amp;      0 &amp;       -1 &amp;      0 &amp;     0 &amp;       0 &amp;      0 &amp;      0 &amp;      -1 &amp;      0\\
+p oce &amp; -1 &amp;     -1 &amp;        0 &amp;      0 &amp;     0 &amp;       0 &amp;      0 &amp;      0 &amp;      -1 &amp;      0\\
+epib  &amp; 0 &amp;       0 &amp;        1 &amp;      0 &amp;    -1 &amp;      -1 &amp;     -1 &amp;     -1 &amp;      -1 &amp;      0\\
+pori  &amp; 1 &amp;       1 &amp;        1 &amp;     -1 &amp;     0 &amp;      -1 &amp;     -1 &amp;     -1 &amp;       0 &amp;      0\\
+p nob &amp; 1 &amp;       1 &amp;        1 &amp;     -1 &amp;    -1 &amp;       0 &amp;     -1 &amp;     -1 &amp;       0 &amp;      0\\
+biba  &amp; 0 &amp;       0 &amp;        0 &amp;     -1 &amp;    -1 &amp;      -1 &amp;      0 &amp;     -1 &amp;       0 &amp;      0\\
+espir &amp; 1 &amp;       1 &amp;        1 &amp;     -1 &amp;    -1 &amp;      -1 &amp;     -1 &amp;      0 &amp;       0 &amp;      0\\
+p liv &amp; 1 &amp;       1 &amp;        1 &amp;      1 &amp;     0 &amp;       0 &amp;      0 &amp;      0 &amp;       0 &amp;      1\\
+alga  &amp; 1 &amp;       1 &amp;        1 &amp;      0 &amp;     0 &amp;       0 &amp;      0 &amp;      0 &amp;      -1 &amp;      0\\
+ \end{bmatrix} \]</span></p>
+<p><font size="4.5"></p>
+<p><br></p>
+<div id="interaction-network" class="section level4">
+<h4>Interaction network</h4>
+<div style="text-align: justify">
+<p>The previous matrix is represented as a network. The node size is relative to its degree (i.e., number of interactions) The representation shows that <em>P. oceanica</em> is highly central in this network, but so are the other two seagrass species.</p>
+</div>
+<center>
+<img src="/posts/Sea medadow community/Seagrass_files/figure-html/unnamed-chunk-2-1.png" width="768" />
+</center>
+</div>
+</div>
+<div id="comunity-interaction-model" class="section level2">
+<h2><strong>Comunity interaction model</strong></h2>
+<p>A general expression to describe interactions has been set as a reference to develop a multi-species interaction model.</p>
+<p><span class="math display">\[\frac{\text{d}C_{1}}{\text{d}t} = r_1C_{1}\left( 1- \frac{C_{1} - \alpha_{21} C_{2}}{k_1} \right)\]</span>
+<span class="math display">\[\frac{\text{d}C_{2}}{\text{d}t} = r_2C_{2}\left( 1- \frac{C_{2} - \alpha_{12} C_{2}}{k_2} \right)\]</span></p>
+<p>where:</p>
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+<div class="blue">
+<ul>
+<li><span class="math inline">\(C_{i}\)</span> represents the abundance of the species C.</li>
+<li><span class="math inline">\(t\)</span> represents the time.</li>
+<li><span class="math inline">\(r_{i}\)</span> represents the intrinsic growth rate.</li>
+<li><span class="math inline">\(\alpha_{ij}\)</span> Modules the weight of the interaction that <span class="math inline">\(i\)</span> exerts on <span class="math inline">\(j\)</span>.</li>
+<li><span class="math inline">\(K_i\)</span> represents the carrying capacity.</li>
+</ul>
+</div>
+<div style="text-align: justify">
+<p>As the system we aim to study has 10 species, a species abundance vector (instead of 10 different individual values) is used as state variable. Consequently, all parameters but <span class="math inline">\(\alpha\)</span> are also included as vectors. <span class="math inline">\(\alpha\)</span> values are represented in the interaction matrix already created.</p>
+<p>Thus, the current model is built as follows:
+<br><br></p>
+</div>
+<p><span class="math display">\[\frac{\text{d}\vec{C_{i}}}{\text{d}t} = \vec{r_i}\vec{C_{i}}\left( 1- \frac{\vec{C_{i}} - [\alpha_{ji}] \vec{C_{j}}}{\vec{k_i} }\right)\]</span></p>
+<p><br></p>
+<pre class="r"><code>library(deSolve)
+
+r &lt;- rep(0.2, nSp)
+k &lt;- rep(1, 10)
+
+state&lt;- rep(0.4, 10) 
+times&lt;-seq(0,50,0.5)
+
+par &lt;- c(c_nod, h_sti, p_oce, epib, pori, p_nob, biba, espir, p_liv, alga, r, k) </code></pre>
+<pre class="r"><code> MODEL_1 &lt;- function(t, state, parameters) {  
+  with(as.list(c(state, parameters)), {
+   
+  C = matrix(state[1:nSp], nrow = nSp, ncol=1) 
+  r= matrix(c(parameters[(nSp*nSp+1):(nSp*nSp + nSp)]), nrow= nSp, ncol=1)
+  I= t(matrix(c(parameters[1:(nSp*nSp)]), nrow= nSp)) #Interaction matrix
+  k= matrix(c(parameters[(nSp*nSp+nSp +1):(nSp*nSp + 2*nSp)]), nrow= nSp, ncol=1)
+
+  dC = r*C*( 1 - (C - 0.2*I%*%C)/k)
+  
+      return(list(c(dC)))
+  })
+ }
+
+  out &lt;- ode(state, times, MODEL_1, par)</code></pre>
+<p><br><br></p>
+</div>
+<div id="model-result" class="section level2">
+<h2><strong>Model result</strong></h2>
+<div style="text-align: justify">
+<p>Equal values are given to each species parameters (<span class="math inline">\(r\)</span> = 0.2 and <span class="math inline">\(k\)</span> = 1). Initial state is also even among species (<span class="math inline">\(C_{t=0}\)</span> = 0.4). Fig. 2 shows the model simulation for a period of 50 units of time. At the end of this period all species abundances seem to stabilize with great differences in their value.</p>
+</div>
+<p><br><br></p>
+<p><img src="/posts/Sea medadow community/Seagrass_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<p><em>Fig. 2: Species interaction model simulation.</em> <span class="math inline">\(C_0\)</span> <em>= 0.4, k=1, r=0.2</em></p>
+<p><br></p>
+<div style="text-align: justify">
+<p>To understand the model behavior in a visual way, a <em>Shinny app</em> has been developed. The app displays the long term abundance variables for the input values of k. Thus, indirect interactions can be seen when by changing the K value of a species, a species with no direct interaction with the former changes its abundance.</p>
+</div>
+<p><br><br></p>
+<iframe src="https://danihernandez.shinyapps.io/treball/" style="width: 800px; height: 1100px">
+</iframe>
+<pre class="r"><code>times&lt;-c(0,100)
+state &lt;- rep(0.4, 10)
+k &lt;- rep(1, 10)
+par &lt;- c(c_nod, h_sti, p_oce, epib, pori, p_nob, biba, espir, p_liv, alga, r, k) 
+
+ out_compt &lt;- data.frame(ode(state, times, MODEL_1, par))[-1,-1]
+  out_compt$Sp &lt;- 0
+
+for (i in 1:10){
+  
+  k &lt;- rep(1, 10)
+  k[i] &lt;- 1.5
+  par &lt;- c(c_nod, h_sti, p_oce, epib, pori, p_nob, biba, espir, p_liv, alga, r, k)
+     out &lt;- data.frame(ode(state, times, MODEL_1, par))
+     out$Sp &lt;- i
+     out_compt&lt;- rbind(out_compt, out[2,-1])
+    out_compt[i +1, ] &lt;- ((out_compt[i+1, ] - out_compt[1,]) / (out_compt[i+1,i] -     out_compt[1,i]))* 100
+    out_compt[i +1, i ] &lt;- 0
+    
+    }</code></pre>
+<p><em>Table 2: Interaction matrix calculated form the model with parameters r= 0.2, k=1 (expt the studied species in every row, in which case it is 1.5) and initial values C=0.4. The value represented is the subject abundance difference from the model with all k values =1. The result is standardize by the difference in the agent abundance. </em></p>
+<table class="table table-condensed">
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+c_nod
+</th>
+<th style="text-align:right;">
+h_sti
+</th>
+<th style="text-align:right;">
+p_oce
+</th>
+<th style="text-align:right;">
+epib
+</th>
+<th style="text-align:right;">
+pori
+</th>
+<th style="text-align:right;">
+p_nob
+</th>
+<th style="text-align:right;">
+biba
+</th>
+<th style="text-align:right;">
+espi
+</th>
+<th style="text-align:right;">
+p_liv
+</th>
+<th style="text-align:right;">
+alga
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+c_nod
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px">NA</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #9ee18f">-18.7</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #9ee18f">-18.7</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #a9d78e">-10.7</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #c8bc8c">11.1</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #c8bc8c">11.1</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #b2d08d">-4.6</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #c8bc8c">11.1</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #caba8c">12.4</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #c6bd8c">10.0</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+h_sti
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #9ee18f">-18.7</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px">NA</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #9ee18f">-18.7</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #a9d78e">-10.7</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #c8bc8c">11.1</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #c8bc8c">11.1</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #b2d08d">-4.6</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #c8bc8c">11.1</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #caba8c">12.4</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #c6bd8c">10.0</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+p_oce
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #9de28f">-19.4</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #9de28f">-19.4</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px">NA</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #caba8c">12.7</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #c4c08c">8.0</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #c4c08c">8.0</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #aed38e">-7.3</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #c4c08c">8.0</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #d0b58c">16.6</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #c5bf8c">8.9</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+epib
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #b5cd8d">-2.5</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #b5cd8d">-2.5</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #b5cd8d">-2.5</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px">NA</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #a5db8e">-13.7</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #a5db8e">-13.7</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #a8d88e">-11.7</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #a5db8e">-13.7</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #d1b48c">17.5</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #b1d08d">-5.0</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+pori
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #b9c98d">0.3</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #b9c98d">0.3</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #b9c98d">0.3</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #a9d78e">-10.8</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px">NA</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #a6da8e">-12.6</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #a6da8e">-12.8</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #a6da8e">-12.6</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #b5cc8d">-1.9</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #b9c98d">0.5</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+p_nob
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #b9c98d">0.3</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #b9c98d">0.3</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #b9c98d">0.3</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #a9d78e">-10.8</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #a6da8e">-12.6</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px">NA</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #a6da8e">-12.8</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #a6da8e">-12.6</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #b5cc8d">-1.9</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #b9c98d">0.5</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+biba
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #b9c98d">0.3</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #b9c98d">0.3</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #b9c98d">0.3</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #a9d78e">-10.8</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #a6da8e">-12.7</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #a6da8e">-12.7</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px">NA</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #a6da8e">-12.7</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #b5cc8d">-1.9</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #b9c98d">0.5</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+espi
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #b9c98d">0.3</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #b9c98d">0.3</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #b9c98d">0.3</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #a9d78e">-10.8</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #a6da8e">-12.6</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #a6da8e">-12.6</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #a6da8e">-12.8</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px">NA</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #b5cc8d">-1.9</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #b9c98d">0.5</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+p_liv
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #a4dc8e">-14.3</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #a4dc8e">-14.3</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #a4dc8e">-14.3</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #9de28f">-19.1</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #b2cf8d">-4.3</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #b2cf8d">-4.3</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #c1c28c">6.4</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #b2cf8d">-4.3</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px">NA</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #90ee90">-28.6</span>
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+alga
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #b5cd8d">-2.5</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #b5cd8d">-2.5</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #b5cd8d">-2.5</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #b3ce8d">-3.6</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #b7cb8d">-0.7</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #b7cb8d">-0.7</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #bac88d">1.1</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #b7cb8d">-0.7</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px; background-color: #d2b48c">17.8</span>
+</td>
+<td style="text-align:right;">
+<span style="display: block; padding: 0 4px; border-radius: 4px">NA</span>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Results show that every single species actually interacts, directly or indirectly, with every other species in the model.</p>
+<p>rsconnect::deployApp()</p>
+</div>

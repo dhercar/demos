@@ -1,0 +1,127 @@
+---
+date: "13/09/2021"
+math: false
+title: Statistically inference of biotic interactions
+type: book
+weight: 100
+draft: false
+hidden: false
+output: md_document
+tags: ['R', 'tutorial', "Interactions", "lasso"]
+---
+
+
+It is often assumed that 3 main filters constrain the composition and structure of natural ecological communities. 
+
+* **Dispersal filter**: A species that is not capable of physically reaching an specific habitat due to dispersal limitations will not be found there. 
+
+* **Environmental filter**: Organismal groups will be filtered depending of their capabilities for surviving and thriving in the specific environmental conditions of the habitat.
+
+* **Interaction filter**: The community structure and composition will also depend on the result of the interactions that are established among organisms. 
+
+
+When using the classic B-diversity-based methods to asses the relative importance of each filter (e.g., variance partitioning) it is not possible to include the _interaction filter_,  which may generate poor results and erroneous interpretations.
+
+A possible solution is the construction of **BAIN**s (Biotic Abiotic Interaction Networks) using partial correlation networks with _lasso_ penalty (graphical lasso). 
+
+
+## Generating correlated data 
+
+As an example, I simulated 4 species (sp) and 2 environmental variables (Env). 
+In ecological systems, environmental variables are often correlated and a PCA can be performed to obtain a few non-correlated meaningful axes. These axes can then replace the original environmental variables in the model to avoid unnecessary complexity. In the same way, species could be grouped by their taxonomical groups or functional traits. 
+
+```{r}
+set.seed(2)
+n = 100 #sample size
+
+Env1 <- rnorm(n)
+Env2 <- rnorm(n)
+
+sp1 <- Env1*0.3 + rnorm(n,0,0.2)
+sp2 <- Env2*0.3 + rnorm(n,0,0.3)
+sp3 <- sp1*0.2 - sp2*0.3 + rnorm(n,0,0.2)
+sp4 <- sp3*0.5- Env1*0.2 +rnorm(n,0,0.2)
+
+data <- data.frame(Env1,Env2,sp1,sp2,sp3,sp4)
+```
+
+
+The predicted network should look something like this: 
+
+
+```{r, echo=T, message=F}
+
+int <- matrix( c(0,  0,  1,  0, 0,  -1,
+                 0,  0,  0,  1,  0,  0,
+                 1,  0,  0,  0,  1,  0,
+                 0,  1,  0,  0, -1,  0,
+                 0,  0,  1,  -1, 0,  1,
+                 -1, 0,  0,  0,  1,  0), ncol=6) 
+
+qgraph::qgraph( int,
+               edge.color = ifelse(int>0,"steelblue", "coral3"),
+                vsize=10, esize=10,labels=names(data), layout="circle", 
+                nodeNames = names(data),borders=T,
+               font=6, edge.label.cex=1,legend=FALSE)
+
+
+
+
+
+```
+
+
+
+## Assessing multivariate normality 
+
+Gaussian models assume multivariate normality. We can check it as follows: 
+
+```{r, echo=T, message=F}
+
+ MVN::mvn(data = scale(data), mvnTest = "hz")[1]  
+
+```
+
+In our case, all variables were simulated from a normal distribution so they follow a multivariate-normal distribution. If the assumption of multivariate normality is violated  (which is usual when dealing with abundance data), the following nonparanormal transformation can be applied. 
+
+```{r, echo=T, message=F}
+ data.trans <- data.frame(huge::huge.npn(data, npn.func = "shrinkage", npn.thresh = NULL,
+  verbose = TRUE))
+```
+
+
+## Infering partial correlation networks
+
+To obtain the BAIN we will use the ``mgm`` package. the ``mgm()`` function returns a mixed graphical model.  ``Mixed`` has nothing to do with random factors, it indicates that different kind of variables (e.g., Faussian or categorical) can be used.
+
+The variable type is indicated with ``type``. In the example all variables are Gaussian so we provide a vector with as many "g" as variables are introduced in them model. The ``level`` argument indicates the number of categories for each variables and it is set a 1 for non-categorical variables. To understand the rest of the parameters I strongly recommend reading the [publication](https://arxiv.org/pdf/1510.06871.pdf) about the package. 
+
+
+```{r, message=F, include=F} 
+
+fit_mgm <- mgm::mgm(data = data, 
+               type=  rep("g",6),
+                      level = rep(1,ncol(data)),
+                     k = 2,lambdaSel = "EBIC" ,ruleReg = "OR", lambdaGam=0.5)
+
+
+```
+ 
+
+The model has been created and stored with the name ``fit_mgm``.
+
+Plot of the the results:
+
+```{r, message=F} 
+qgraph::qgraph(fit_mgm$pairwise$wadj,
+               edge.color = fit_mgm$pairwise$edgecolor,
+                vsize=10, esize=10,labels=names(data), layout="circle", 
+                nodeNames = names(data),borders=T,
+               font=6, edge.label.cex=1,legend=FALSE)
+               
+ 
+```
+
+
+We see the model detected all the underlying interactions in the data. However, it also detected two false no-null interactions (sp3-env1, sp3-env2). 
+

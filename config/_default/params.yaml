@@ -60,13 +60,12 @@ time_format: '3:04 PM'
 address_format: en-us
 
 # Site features
-
 highlight: true
 highlight_languages:
   - r
   - python
   - latex
-math: false
+math: true
 diagram: false
 privacy_pack: false
 edit_page:

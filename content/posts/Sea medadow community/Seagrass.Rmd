@@ -1,15 +1,284 @@
 ---
 date: "2021-09-15"
 highlight: true
-title: Do biotic interactions affect ecosystem stability? 
-subtitle: Simulating interaction networks in R. 
+title: Simulating a Seagrass community
+subtitle:
+math: true
+draft: false
+hidden: false
+output: md_document
 type: book
 weight: 30
 ---
 
+  <font size="4.5"> 
+ 
+```{r setup, include=FALSE, echo=F}
+knitr::opts_chunk$set(echo = F, include=F) 
+library(ggplot2)
+   theme_set(theme_bw())
+    theme_update(text=element_text(size=16, family= "serif"))
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
 ```
+## Introduction k
+<div style="text-align: justify">
+
+In this document, the direct and indirect interactions among the species of a theoretical community are studied form a theoretical perspective. A simulation has been created observe the system behaviour. To put some context, the interacting species are some of the commonly found in a Mediterranean seagrass meadow dominated by _Posidonia oceanica_. 
+
+The most common interaction has been set to be competence for resources. Two clusters of organisms are observed for this interaction: The primary producers and all filtering organisms. The former cluster integrates _Cymodocea nodosa (c_nod)_, _Halophyla stipulacea (h_sti)_ and _Posidonia oceanica (p_oce) _, but red algae _(alga)_ could also compete for resources such as light when the seagrass growth is too high. However, as the seagrass stabilizes the sandbed, allowing benthic organisms like red algae to proliferate, the relationship of red algae with all three seagrass species is taken to be positive. In addition, epibiontic _(epib)_ organisms may also interact with _P. oceanica_ by blocking the light and nutrient exchange and enhancing predatory pressure. Thus, the interaction is set to be negative.  The latter cluster created by competence interactions involves all 5 filtering organisms ( epibiontic organisms, sponges _(pori)_, _Pinna nobilis (p_nob)_, bivalve _(biva)_ and sabellida polychaeta _(espi)_). 
+
+All three seagrass species have been considered to provide a suitable habitat not only for the red algae but also for _P. nobilis_, porifera and sabellida. This has been represented as a positive facilitation interaction. In the case of epibiontic organisms, only _P. oceanica_ has been set to provide this kind of positive interaction due to the longevity of their leafs and its slower growth compared to _C. nodosa_ and _H. stipulacea_. 
+
+Finally, a predator - prey interaction takes place between the sea urchin _Paracentrotus lividus (p_liv)_ and all plant organisms ( the three seagrass species and the red algae). 
+</div>
+
+
+## **Interaction matrix**
+
+Due to the theoretical and academic porpoise of this work, all weights are simply taken to be +1, 0 or -1. As before, columns represent the agent and rows the subjects of the interaction.
+</div>
+
+<br>
+
+ <font size="3"> 
+
+
+$$ \begin{bmatrix} & c nod & h sti & p oce & epib & pori & p nob & biva & espi & p liv & alga\\
+c nod & 0 &      -1 &       -1 &      0 &     0 &       0 &      0 &      0 &      -1 &      0\\
+h sti & -1 &      0 &       -1 &      0 &     0 &       0 &      0 &      0 &      -1 &      0\\
+p oce & -1 &     -1 &        0 &      0 &     0 &       0 &      0 &      0 &      -1 &      0\\
+epib  & 0 &       0 &        1 &      0 &    -1 &      -1 &     -1 &     -1 &      -1 &      0\\
+pori  & 1 &       1 &        1 &     -1 &     0 &      -1 &     -1 &     -1 &       0 &      0\\
+p nob & 1 &       1 &        1 &     -1 &    -1 &       0 &     -1 &     -1 &       0 &      0\\
+biba  & 0 &       0 &        0 &     -1 &    -1 &      -1 &      0 &     -1 &       0 &      0\\
+espir & 1 &       1 &        1 &     -1 &    -1 &      -1 &     -1 &      0 &       0 &      0\\
+p liv & 1 &       1 &        1 &      1 &     0 &       0 &      0 &      0 &       0 &      1\\
+alga  & 1 &       1 &        1 &      0 &     0 &       0 &      0 &      0 &      -1 &      0\\
+ \end{bmatrix} $$
+ 
+ 
+  <font size="4.5"> 
+ 
+````{r}
+
+nSp <- 10 
+
+Sp <- c("c_nod", "h_sti", "p_oce", "epib", "pori", "p_nob", "biva", "espi", "p_liv", "alga")
+
+c_nod <- c(0,      -1,       -1,      0,     0,       0,      0,      0,      -1,      0)
+h_sti <- c(-1,      0,       -1,      0,     0,       0,      0,      0,      -1,      0)
+p_oce <- c(-1,     -1,        0,      0,     0,       0,      0,      0,      -1,      0)
+epib  <- c(0,       0,        1,      0,    -1,      -1,     -1,     -1,      -1,      0)
+pori  <- c(1,       1,        1,     -1,     0,      -1,     -1,     -1,       0,      0)
+p_nob <- c(1,       1,        1,     -1,    -1,       0,     -1,     -1,       0,      0)
+biba  <- c(0,       0,        0,     -1,    -1,      -1,      0,     -1,       0,      0)
+espir <- c(1,       1,        1,     -1,    -1,      -1,     -1,      0,       0,      0)
+p_liv <- c(1,       1,        1,      1,     0,       0,      0,      0,       0,      1)
+alga  <- c(1,       1,        1,      0,     0,       0,      0,      0,      -1,      0)
+init <- rep(0.4, nSp)
+
+Int.data <- data.frame(Sp, c_nod, h_sti, p_oce, epib, pori, p_nob, biba, espir, p_liv, alga)
+
+
+r <- rep(0.2, nSp)
+k <- rep(1, 10)
+
+Int1.data <- Int.data[,-1]
+rownames(Int1.data) <- colnames(Int1.data)
+
+````
+
+<br> 
+
+#### Interaction network
+
+<div style="text-align: justify">
+The previous matrix is represented as a network. The node size is relative to its degree (i.e., number of interactions) The representation shows that _P. oceanica_ is highly central in this network, but so are the other two seagrass species. 
+
+</div>
+
+<center>
+```{r, include=T, fig.width=8, fig.height=8, message=F, warning=F}
+
+library(igraph)
+
+set.seed(3)
+network <- graph_from_adjacency_matrix(abs(as.matrix(Int1.data)))
+
+V(network)$label.cex = 1.5
+# plot it
+plot(network, 
+    layout=layout.fruchterman.reingold,
+     vertex.size=degree(network)^2*0.3,
+     vertex.color="white",
+     edge.color="blue",
+     edge.curved=F,
+     edge.width=edge.betweenness(network)*0.3,
+     edge.arrow.size=1)
+
+
+```
+</center>
+
+
+## **Comunity interaction model**
+
+A general expression to describe interactions has been set as a reference to develop a multi-species interaction model. 
+
+
+$$\frac{\text{d}C_{1}}{\text{d}t} = r_1C_{1}\left( 1- \frac{C_{1} - \alpha_{21} C_{2}}{k_1} \right)$$
+$$\frac{\text{d}C_{2}}{\text{d}t} = r_2C_{2}\left( 1- \frac{C_{2} - \alpha_{12} C_{2}}{k_2} \right)$$
+
+where: 
+
+
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+<div class = "blue">
+
+* $C_{i}$ represents the abundance of the species C.
+* $t$ represents the time.
+* $r_{i}$ represents the intrinsic growth rate.
+* $\alpha_{ij}$ Modules the weight of the interaction that $i$ exerts on $j$.
+* $K_i$ represents the carrying capacity.
+
+</div>
+
+<div style="text-align: justify">
+As the system we aim to study has 10 species, a  species abundance vector (instead of 10 different individual values) is used as state variable. Consequently, all parameters but $\alpha$ are also included as vectors. $\alpha$ values are represented in the interaction matrix already created. 
+
+Thus, the current model is built as follows:
+<br><br>
+</div>
+
+$$\frac{\text{d}\vec{C_{i}}}{\text{d}t} = \vec{r_i}\vec{C_{i}}\left( 1- \frac{\vec{C_{i}} - [\alpha_{ji}] \vec{C_{j}}}{\vec{k_i} }\right)$$
+
+<br>
+```{r, fig.width= 9, echo=T, include=T}
+library(deSolve)
+
+r <- rep(0.2, nSp)
+k <- rep(1, 10)
+
+state<- rep(0.4, 10) 
+times<-seq(0,50,0.5)
+
+par <- c(c_nod, h_sti, p_oce, epib, pori, p_nob, biba, espir, p_liv, alga, r, k) 
+
+```
+
+```{r, echo=T, include=T}
+ MODEL_1 <- function(t, state, parameters) {  
+  with(as.list(c(state, parameters)), {
+   
+  C = matrix(state[1:nSp], nrow = nSp, ncol=1) 
+  r= matrix(c(parameters[(nSp*nSp+1):(nSp*nSp + nSp)]), nrow= nSp, ncol=1)
+  I= t(matrix(c(parameters[1:(nSp*nSp)]), nrow= nSp)) #Interaction matrix
+  k= matrix(c(parameters[(nSp*nSp+nSp +1):(nSp*nSp + 2*nSp)]), nrow= nSp, ncol=1)
+
+  dC = r*C*( 1 - (C - 0.2*I%*%C)/k)
+  
+      return(list(c(dC)))
+  })
+ }
+
+  out <- ode(state, times, MODEL_1, par)
+   
+``` 
+ 
+ <br><br>
+
+## **Model result**
+
+<div style="text-align: justify">
+Equal values are given to each species parameters ($r$ = 0.2 and $k$ = 1). Initial state is also even among species ($C_{t=0}$ = 0.4).  Fig. 2 shows the model simulation for a period of 50 units of time. At the end of this period all species abundances seem  to stabilize with great differences in their value. 
+</div>
+
+<br><br>
+
+```{r, fig.width= 9} 
+
+   library(ggplot2) 
+  library(reshape2)
+   
+   times<- c(0, 100)
+  out.bar <- subset(melt(as.data.frame(as.matrix(ode(state, times, MODEL_1, par))), id='time'), time=="100")
+
+  
+```
+
+
+```{r, include=T, echo=F}
+  
+ plot  <- ggplot(melt(data.frame(out), id=c("time")), aes(x=time, y=value, col=variable)) + geom_line() + theme(legend.position="none") + ylab("Abundance")
+
+print(plot)
+```
+
+_Fig. 2: Species interaction model simulation._ $C_0$ _= 0.4, k=1, r=0.2_
+
+
+<br>
+
+<div style="text-align: justify">
+To understand the model behavior in a visual way, a _Shinny app_ has been developed. The app displays the long term abundance variables for the input values of k. Thus, indirect interactions can be seen when by changing the K value of a species, a species with no direct interaction with the former changes its abundance. 
+</div>
+
+
+<br><br>
+
+<iframe src="https://danihernandez.shinyapps.io/treball/" style="width: 800px; height: 1100px"></iframe>
+
+
+
+
+```{r, include=T, echo=T}
+
+times<-c(0,100)
+state <- rep(0.4, 10)
+k <- rep(1, 10)
+par <- c(c_nod, h_sti, p_oce, epib, pori, p_nob, biba, espir, p_liv, alga, r, k) 
+
+ out_compt <- data.frame(ode(state, times, MODEL_1, par))[-1,-1]
+  out_compt$Sp <- 0
+
+for (i in 1:10){
+  
+  k <- rep(1, 10)
+  k[i] <- 1.5
+  par <- c(c_nod, h_sti, p_oce, epib, pori, p_nob, biba, espir, p_liv, alga, r, k)
+     out <- data.frame(ode(state, times, MODEL_1, par))
+     out$Sp <- i
+     out_compt<- rbind(out_compt, out[2,-1])
+    out_compt[i +1, ] <- ((out_compt[i+1, ] - out_compt[1,]) / (out_compt[i+1,i] -     out_compt[1,i]))* 100
+    out_compt[i +1, i ] <- 0
+    
+    }
+```
+
+```{r, include=F, echo=F}
+out_compt <- out_compt[-1,-11]
+rownames(out_compt) <-  c("c_nod", "h_sti", "p_oce", "epib", "pori", "p_nob", "biba", "espi", "p_liv", "alga")
+colnames(out_compt) <-  c("c_nod", "h_sti", "p_oce", "epib", "pori", "p_nob", "biba", "espi", "p_liv", "alga")
+
+library(formattable)
+
+diag(out_compt) = NA
+
+```
+
+
+_Table 2: Interaction matrix calculated form the model with parameters r= 0.2, k=1 (expt the studied species in every row, in which case it is 1.5) and initial values C=0.4. The value represented is the subject abundance difference from the model with all k values =1. The result is standardize by the difference in the agent abundance. _
+```{r, echo=F, include=T}
+formattable(round(out_compt, 1), list(area(col = 1:10) ~ color_tile("lightgreen","tan")))
+````
+
+
+Results show that every single species actually interacts, directly or indirectly, with every other species in the model. 
+
+rsconnect::deployApp()
+
+
 
 

@@ -16,7 +16,6 @@ defaultContentLanguage: en
 hasCJKLanguage: false
 defaultContentLanguageInSubdir: false
 removePathAccents: true
-
 ############################
 ## MODULES
 ############################
@@ -68,3 +67,5 @@ related:
       weight: 100
     - name: categories
       weight: 70
+
+

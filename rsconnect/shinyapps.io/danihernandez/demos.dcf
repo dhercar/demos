@@ -1,0 +1,10 @@
+name: demos
+title:
+username:
+account: danihernandez
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 4684188
+bundleId: 5048345
+url: https://danihernandez.shinyapps.io/demos/
+when: 1632046674.83512

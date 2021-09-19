@@ -33,8 +33,6 @@ design:
 
 ![](logo.svg)
 
-# Modelling natural systems
-
 </center>
 
 

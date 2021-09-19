@@ -6,6 +6,8 @@ subtitle: Simulating interaction networks in R.
 type: book
 weight: 30
 bibliography: mybibfile.bib
+draft: true
+hidden: true
 ---
 
 ```{r setup, include=FALSE}
