@@ -11,7 +11,6 @@ type: book
 weight: 30
 ---
 
-  <font size="4.5"> 
  
 ```{r setup, include=FALSE, echo=F}
 knitr::opts_chunk$set(echo = F, include=F) 
@@ -20,7 +19,7 @@ library(ggplot2)
     theme_update(text=element_text(size=16, family= "serif"))
 
 ```
-## Introduction k
+## Introduction 
 <div style="text-align: justify">
 
 In this document, the direct and indirect interactions in a hypothetical community are studied form a theoretical perspective. A simulation has been created to observe the system behaviour. To put some context, the interacting species are some of the commonly found in a Mediterranean seagrass meadow dominated by _Posidonia oceanica_. 
@@ -57,7 +56,7 @@ alga  & 1 &       1 &        1 &      0 &     0 &       0 &      0 &      0 &   
  \end{bmatrix} $$
  
  
-  <font size="4.5"> 
+  </font> 
  
 ````{r}
 
