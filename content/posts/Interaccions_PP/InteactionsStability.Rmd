@@ -7,23 +7,355 @@ type: book
 weight: 30
 bibliography: mybibfile.bib
 draft: true
-hidden: true
+hidden: false
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
+htmltools::tagList(rmarkdown::html_dependency_font_awesome())
+
+library(gridExtra)
+library(ggplot2)
+theme_set(theme_bw())
+    theme_update(text=element_text(size=16, family= "serif"))
+library(reshape2)
+    library(igraph)
+    library(plotly)
+library(kableExtra)
+library(doBy)
+library(gganimate)
+library(deSolve)
+library(dplyr)
+    
+     theme_set(theme_bw())
+    theme_update(text=element_text(size=12, family= "serif"),
+                 panel.background = element_rect(fill = "white"), 
+                 strip.background = element_rect(color="black", 
+                                                 fill="transparent", size=1,
+                                                 linetype="solid"),
+                 legend.background = element_rect(fill = "transparent"),
+                  plot.background = element_rect(fill = "transparent", color = NA),
+     strip.text = element_text( color = "black", face = "bold.italic"),
+     axis.ticks.length=unit(-0.15, "cm"), 
+                 axis.text.x = element_text(margin=unit(c(0.5,0.5,0.5,0.5), "cm")), 
+                 axis.text.y = element_text(margin=unit(c(0.5,0.5,0.5,0.5), "cm"))
+     )
+
 ```
 
 
-### Context <i class="fa fa-map-marked-alt"></i>
-This post is inspired by an assignment I did with [Yanis Zentner](https://www.linkedin.com/in/yaniszentnermurlans/?originalSubdomain=es) during my  [MS in Ecology](https://www.ub.edu/web/ub/en/estudis/oferta_formativa/master_universitari/fitxa/E/M2203/index.html).  We were ask to submit an abstract and prepare a talk pretending we were in a scientific congress about biotic interactions. Inspired by @mccann2000diversity , we decided to investigate about the relationship between interactions and ecosystem stability. We were supposed to do some bibliographic research, which we did, but I couldn't stand the chance of replicating and manipulating the simulations I was reading about.
+**When a natural ecosystem is free from perturbation it reaches a stable state where every species abundance stays the same. Or does it? **
 
+The following video shows a simplified ecosystem simulation including individuals of 3 trophic levels (phytoplankton, zooplankton and fish). Each individual has an specified biomass that increases each time a prey is consumed, with part of the prey biomass being released as free nutrients. Stochastic death can also occur, in which case all the biomass is directly transformed into free nutrients. When a certain biomass is reached, individuals may reproduce themselves by splitting their biomass in two. Thus, the total mass of the "ecosystem" remains constant.
 
-## Introduction
-
-When a natural ecosystem is free from perturbation it reaches a stable state where every species abundance stays the same... or does it???
 
 <center>
 <iframe width="600" height="430" src="https://www.youtube.com/embed/G4qt5cSSf9Q" frameborder="0" allow="accelerometer; autoplay=1; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 </center>
 
+<br>
+
+Even after hours of simulation there is nothing like an equilibrium being reached. Furthermore, periodic oscillations of predator-prey biomass can be observed. This behaviour resembles [Alfred J. Lotka](https://en.wikipedia.org/wiki/Alfred_J._Lotka) and [Vito Volterra](https://en.wikipedia.org/wiki/Vito_Volterra) model, which simulates two interacting species.
+
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+
+<div class = "blue">
+
+$$\frac{\text{d}P}{\text{d}t} = rP - cPZ$$
+
+$$\frac{\text{d}Z}{\text{d}t} = ePZ - mZ$$
+
+where:
+
+* $P$ is the prey abundance
+* $Z$ is the predator abundance
+* $r$ is the intrinsic growth rate of the prey 
+* $c$ is the effect of predation on the prey.
+* $e$ is the effect of predation on the predator. 
+* $m$ is the mortality rate of the predator
+
+
+</div> 
+<br> 
+<br>
+
+The model simulation shows a constantly oscillating system regardless of the initial conditions. In the plotted examples, the parameters are set to be $r$ = 0.2, $c$ = 0.3,  $e$ = 0.3,  $m$ = 0.3. 
+```{r,incude=TRUE, echo=FALSE, fig.height = 2, out.width = 8, message= FALSE, warning=FALSE}
+
+#Vector amb els paràmetres del model
+par<-c(rp=0.2, 
+       c=0.3, 
+       e=0.3, 
+       m=0.3)
+
+
+
+#Interval de simulació (0-500) i resolució (1)
+tint = 0.2
+t<-seq(0, tint, tint)
+
+P <- seq(0,3,0.2)
+Z <- seq(0,3,0.2)
+
+out.list <- list()
+
+n = 0
+
+#funció del model
+model_1<-function(t, init,par){
+   with(as.list(c(init,par)),{
+     
+       #Sistema d'equacions diferenciasl 
+      dP<- rp*P - c*P*Z 
+      dZ<- e*P*Z - m*Z
+      
+      list(c(dP,dZ))
+      })
+  
+}
+
+for(i in P){
+  for(j in Z){
+    n = n + 1
+    #Vector amb els valors inicials de les variables d'estat
+    init<-c(P=i,
+            Z=j)
+    
+        
+    out<-as.data.frame(ode(init,t, model_1,par))
+    out<- out[(out$time== tint),]
+    
+    out$Pin <- i
+    out$Zin <- j
+    
+    out.list[[n]] <- out
+
+  }
+}
+
+
+out.all <-bind_rows(out.list)
+out.all$size <- sqrt(abs(out.all$P - out.all$Pin)^2 +abs(out.all$Z - out.all$Zin)^2) 
+
+out.all$vP <- (out.all$P - out.all$Pin)/out.all$size
+out.all$vZ <- (out.all$Z - out.all$Zin)/out.all$size 
+
+```
+
+
+```{r,incude=TRUE, echo=FALSE, message= FALSE, warning=FALSE}
+
+#Interval de simulació (0-500) i resolució (1)
+
+t<-seq(0, 35, 0.1)
+
+P <- seq(1,3,0.5)
+Z <- 0.7
+
+outTime.list <- list()
+
+n = 0
+
+for(i in P){
+  for(j in Z){
+    n = n + 1
+    #Vector amb els valors inicials de les variables d'estat
+    init<-c(P=i,
+            Z=j)
+        
+    out<-as.data.frame(ode(init,t, model_1,par))
+    
+    out$Pin <- i
+    out$Zin <- j
+    out$run <- n
+    
+    outTime.list[[n]] <- out
+
+  }
+}
+
+
+outTime.all <-bind_rows(outTime.list)
+  
+ggplot(outTime.all, aes(x=P, y=Z)) +
+  theme(aspect.ratio = 1,
+        panel.grid = element_blank(),
+        panel.background= element_blank(),
+        plot.background = element_blank(),
+        legend.position = "none")+
+  geom_segment(data=out.all, aes(x = Pin, y = Zin, xend = Pin+vP*0.1, yend = Zin + vZ*0.1, col=size),
+                  arrow = arrow(length = unit(0.2, "cm")),size=1)+
+  scale_color_gradientn(colours=c("green","yellow", "orange", "coral2", "purple"))+
+  scale_size_continuous(range = c(0.5,1.5))+ xlim(c(0,3.1)) + ylim(c(0,2.8))+
+  geom_path(aes(group=run), size=1) + 
+  ggrepel::geom_label_repel(data=data.frame(P=seq(1,3,0.5), 
+                                            Z=rep(0.7,5), 
+                                            label=paste(seq(1,3,0.5),",", rep(0.7,5))),
+                            aes(x=P, y=Z, label=label),
+                            force_pull = 0.9, force=10)
+
+
+
+
+```
+
+
+
+## Simulating an interacting community
+
+
+To study the effect of biotic interactions when a larger number of organisms is involved, a simplified interacting community can be simulated as follow: 
+
+
+<div class = "blue">
+
+
+$$\frac{\text{d}C_{i}}{\text{d}t} = r_iC_{i}\left( 1- \frac{C_{i} - [\alpha_{ji}] C_{j}}{k_i}\right)$$
+Where:
+
+* $C_{i}$ is a vector with the abundance of each species.
+* $t$ represents time.
+* $r_{i}$ is a vector that represents the intrinsic growth rate of each species.
+* $\alpha_{ij}$ is a matrix that contains every pairwise interaction.
+* $K_i$ is a vector that represents the carrying capacity for each species.
+
+</div>
+
+<br> 
+
+An example of interaction matrix $\alpha_{ij}$ looks like this:
+  
+```{r, echo=FALSE}
+
+ Int<- read.csv("network.csv")[,-1]
+
+row.names(Int)<- names(Int)
+ 
+knitr::kable(Int[1:10,1:10]) %>%   kable_styling(font_size = 12)
+  
+``` 
+
+In this example there are predator-prey, mutualistic and competitive interactions among 10 species (Vn). For instance, V1 has:
+
+* A trophic interaction (+, -) of weight 0.2 with V2
+* A competence interaction (-, -) of weight 0.05 with V3
+* A mutualistic interaction (+,`+) of asymetric weight (0.20, 0.05) with V9. 
+
+Now we can see how different aspects of biotic interactions affect the system stability. 
+<br>
+
+# Connectance 
+
+An interacting community can be represented as a network. The nodes of the network represent organisms and the edges represent interactions. The _connectance_ is a measure of how densely interconnected the network is. Consequently, a higher number of interactions for a given number of nodes increases the network connectance. 
+
+
+```{r, echo=FALSE, fig.height= 5, dpi=300}
+
+op <- par(mfrow = c(1, 2)) 
+par(mar=c(0, 0, 0, 0))
+Int_lc<- read.csv("network_lc.csv")[,-1]
+network <- simplify(graph.adjacency(abs(as.matrix(Int_lc)), mode= "lower", weighted= TRUE))
+
+plot(
+     network, 
+     vertex.label=NA,
+     vertex.color="lightblue",
+     layout=layout.circle,
+     vertex.size=20, #Edge size related to the degree in the network
+     edge.width = E(network)$weight*15, #Edge width related to the weight
+     edge.curved=F) #F
+title("Low C", line=-10)
+
+
+
+Int_hc<- read.csv("network_hc.csv")[,-1]
+network <- simplify(graph.adjacency(abs(as.matrix(Int_hc)), mode= "lower", weighted= TRUE))
+
+plot(
+     network, 
+     vertex.label=NA,
+     vertex.color="lightblue",
+     layout=layout.circle,
+     vertex.size=20, #Edge size related to the degree in the network
+     edge.width = E(network)$weight*15, #Edge width related to the weight
+     edge.curved=F) #F
+title("High C", line=-10)
+
+
+op <- par(mfrow = c(1, 1)) 
+```
+
+
+Random interaction matrices have been generated in the connectance gradient and the equilibriums have been calculated. The eigenvalues obtained from the diagonalization of the Jacobian matrix has been studied to asses the probability of stable equilibrium at increasing connectance scenarios. 
+
+```{r, message=F, include=T, echo=F, warning=FALSE, dpi=200, fig.width=9, fig.height=5}
+
+stability.data <- read.csv("nInt.data.csv")
+
+
+ggplot(stability.data, aes(y=as.numeric(stability), x=int)) + geom_jitter(width=0.5, height = 0.02,size=3, alpha=0.1)+ 
+    geom_smooth(method="glm",method.args=list(family=binomial), colour="coral", se=F )+ ylab("Stability")+ xlab("Interactions/Species")+theme(legend.position="") 
+```
+
+The results show a decreasing probability of stability in the connectance gradient, which may reflect a destabilizing nature of biotic interactions. 
+
+
+# Interaction Strength
+
+To keep it simple, the strength of biotic interactions have been restricted to two possible values: _weak_ (0.05) and _strong_ (0.2). In the previous simulations, the proportion of weak and strong interactions was constant. However, we will now asses the effect of increasing the proportion of strong interactions over the probability of stable equilibrium. 
+
+
+
+```{r, echo=FALSE, fig.height= 5, dpi=300}
+
+op <- par(mfrow = c(1, 2)) 
+par(mar=c(0, 0, 0, 0))
+Int_wI<- read.csv("network_wI.csv")[,-1]
+network <- simplify(graph.adjacency(abs(as.matrix(Int_wI)), mode= "lower", weighted= TRUE))
+
+plot(
+     network, 
+     vertex.label=NA,
+     vertex.color="lightblue",
+     layout=layout.circle,
+     vertex.size=20, #Edge size related to the degree in the network
+     edge.width = E(network)$weight*15, #Edge width related to the weight
+     edge.curved=F) #F
+title("Low S/W", line=-10)
+
+
+
+Int_sI<- read.csv("network_sI.csv")[,-1]
+network <- simplify(graph.adjacency(abs(as.matrix(Int_sI)), mode= "lower", weighted= TRUE))
+
+plot(
+     network, 
+     vertex.label=NA,
+     vertex.color="lightblue",
+     layout=layout.circle,
+     vertex.size=20, #Edge size related to the degree in the network
+     edge.width = E(network)$weight*15, #Edge width related to the weight
+     edge.curved=F) #F
+title("High S/W", line=-10)
+
+
+op <- par(mfrow = c(1, 1)) 
+```
+
+
+
+```{r, message=F, include=T, echo=F, warning=FALSE, dpi=200, fig.width=9, fig.height=5}
+
+stability.data <- read.csv("propSInt.data.csv")
+
+
+
+
+ ggplot(stability.data, aes(y=as.numeric(stability), x=sIntProp)) + geom_jitter(width=0.025, height = 0.02,size=3, alpha=0.1)+ 
+     geom_smooth(method="glm",method.args=list(family=binomial), colour="coral", se=F )+ ylab("Stability")+ xlab("Strong Interactions/ weak interactions")+theme(legend.position="")
+
+
+```

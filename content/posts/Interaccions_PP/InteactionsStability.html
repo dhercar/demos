@@ -7,25 +7,469 @@ type: book
 weight: 30
 bibliography: mybibfile.bib
 draft: true
-hidden: true
+hidden: false
 ---
 
+<link href="/rmarkdown-libs/font-awesome/css/all.css" rel="stylesheet" />
+<link href="/rmarkdown-libs/font-awesome/css/v4-shims.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/kePrint/kePrint.js"></script>
+<link href="/rmarkdown-libs/lightable/lightable.css" rel="stylesheet" />
 
 
-<div id="context" class="section level3">
-<h3>Context <i class="fa fa-map-marked-alt"></i></h3>
-<p>This post is inspired by an assignment I did with <a href="https://www.linkedin.com/in/yaniszentnermurlans/?originalSubdomain=es">Yanis Zentner</a> during my <a href="https://www.ub.edu/web/ub/en/estudis/oferta_formativa/master_universitari/fitxa/E/M2203/index.html">MS in Ecology</a>. We were ask to submit an abstract and prepare a talk pretending we were in a scientific congress about biotic interactions. Inspired by <span class="citation">McCann (<a href="#ref-mccann2000diversity" role="doc-biblioref">2000</a>)</span> , we decided to investigate about the relationship between interactions and ecosystem stability. We were supposed to do some bibliographic research, which we did, but I couldn’t stand the chance of replicating and manipulating the simulations I was reading about.</p>
-</div>
-<div id="introduction" class="section level2">
-<h2>Introduction</h2>
-<p>When a natural ecosystem is free from perturbation it reaches a stable state where every species abundance stays the same… or does it???</p>
+<p><strong>When a natural ecosystem is free from perturbation it reaches a stable state where every species abundance stays the same. Or does it? </strong></p>
+<p>The following video shows a simplified ecosystem simulation including individuals of 3 trophic levels (phytoplankton, zooplankton and fish). Each individual has an specified biomass that increases each time a prey is consumed, with part of the prey biomass being released as free nutrients. Stochastic death can also occur, in which case all the biomass is directly transformed into free nutrients. When a certain biomass is reached, individuals may reproduce themselves by splitting their biomass in two. Thus, the total mass of the “ecosystem” remains constant.</p>
 <center>
 <iframe width="600" height="430" src="https://www.youtube.com/embed/G4qt5cSSf9Q" frameborder="0" allow="accelerometer; autoplay=1; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen>
 </iframe>
 </center>
-<div id="refs" class="references">
-<div id="ref-mccann2000diversity">
-<p>McCann, Kevin Shear. 2000. “The Diversity–Stability Debate.” <em>Nature</em> 405 (6783): 228–33.</p>
+<p><br></p>
+<p>Even after hours of simulation there is nothing like an equilibrium being reached. Furthermore, periodic oscillations of predator-prey biomass can be observed. This behaviour resembles <a href="https://en.wikipedia.org/wiki/Alfred_J._Lotka">Alfred J. Lotka</a> and <a href="https://en.wikipedia.org/wiki/Vito_Volterra">Vito Volterra</a> model, which simulates two interacting species.</p>
+<style>
+div.blue { background-color:#e6f0ff; border-radius: 5px; padding: 20px;}
+</style>
+<div class="blue">
+<p><span class="math display">\[\frac{\text{d}P}{\text{d}t} = rP - cPZ\]</span></p>
+<p><span class="math display">\[\frac{\text{d}Z}{\text{d}t} = ePZ - mZ\]</span></p>
+<p>where:</p>
+<ul>
+<li><span class="math inline">\(P\)</span> is the prey abundance</li>
+<li><span class="math inline">\(Z\)</span> is the predator abundance</li>
+<li><span class="math inline">\(r\)</span> is the intrinsic growth rate of the prey</li>
+<li><span class="math inline">\(c\)</span> is the effect of predation on the prey.</li>
+<li><span class="math inline">\(e\)</span> is the effect of predation on the predator.</li>
+<li><span class="math inline">\(m\)</span> is the mortality rate of the predator</li>
+</ul>
 </div>
+<p><br>
+<br></p>
+<p>The model simulation shows a constantly oscillating system regardless of the initial conditions. In the plotted examples, the parameters are set to be <span class="math inline">\(r\)</span> = 0.2, <span class="math inline">\(c\)</span> = 0.3, <span class="math inline">\(e\)</span> = 0.3, <span class="math inline">\(m\)</span> = 0.3.</p>
+<p><img src="/posts/Interaccions_PP/InteactionsStability_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<div id="simulating-an-interacting-community" class="section level2">
+<h2>Simulating an interacting community</h2>
+<p>To study the effect of biotic interactions when a larger number of organisms is involved, a simplified interacting community can be simulated as follow:</p>
+<div class="blue">
+<p><span class="math display">\[\frac{\text{d}C_{i}}{\text{d}t} = r_iC_{i}\left( 1- \frac{C_{i} - [\alpha_{ji}] C_{j}}{k_i}\right)\]</span>
+Where:</p>
+<ul>
+<li><span class="math inline">\(C_{i}\)</span> is a vector with the abundance of each species.</li>
+<li><span class="math inline">\(t\)</span> represents time.</li>
+<li><span class="math inline">\(r_{i}\)</span> is a vector that represents the intrinsic growth rate of each species.</li>
+<li><span class="math inline">\(\alpha_{ij}\)</span> is a matrix that contains every pairwise interaction.</li>
+<li><span class="math inline">\(K_i\)</span> is a vector that represents the carrying capacity for each species.</li>
+</ul>
 </div>
+<p><br></p>
+<p>An example of interaction matrix <span class="math inline">\(\alpha_{ij}\)</span> looks like this:</p>
+<table class="table" style="font-size: 12px; margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+V1
+</th>
+<th style="text-align:right;">
+V2
+</th>
+<th style="text-align:right;">
+V3
+</th>
+<th style="text-align:right;">
+V4
+</th>
+<th style="text-align:right;">
+V5
+</th>
+<th style="text-align:right;">
+V6
+</th>
+<th style="text-align:right;">
+V7
+</th>
+<th style="text-align:right;">
+V8
+</th>
+<th style="text-align:right;">
+V9
+</th>
+<th style="text-align:right;">
+V10
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+V1
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+-0.05
+</td>
+<td style="text-align:right;">
+0.05
+</td>
+<td style="text-align:right;">
+0.20
+</td>
+<td style="text-align:right;">
+-0.20
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+-0.05
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+0.20
+</td>
+<td style="text-align:right;">
+-0.20
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+V2
+</td>
+<td style="text-align:right;">
+0.05
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+0.20
+</td>
+<td style="text-align:right;">
+-0.05
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+-0.20
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+0.20
+</td>
+<td style="text-align:right;">
+-0.20
+</td>
+<td style="text-align:right;">
+-0.20
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+V3
+</td>
+<td style="text-align:right;">
+0.05
+</td>
+<td style="text-align:right;">
+0.20
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+0.05
+</td>
+<td style="text-align:right;">
+0.20
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+-0.05
+</td>
+<td style="text-align:right;">
+-0.05
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+V4
+</td>
+<td style="text-align:right;">
+0.05
+</td>
+<td style="text-align:right;">
+-0.05
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+-0.05
+</td>
+<td style="text-align:right;">
+-0.05
+</td>
+<td style="text-align:right;">
+0.20
+</td>
+<td style="text-align:right;">
+0.20
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+V5
+</td>
+<td style="text-align:right;">
+-0.05
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+-0.20
+</td>
+<td style="text-align:right;">
+0.05
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+-0.20
+</td>
+<td style="text-align:right;">
+-0.20
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+0.20
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+V6
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+-0.05
+</td>
+<td style="text-align:right;">
+0.20
+</td>
+<td style="text-align:right;">
+-0.05
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+0.20
+</td>
+<td style="text-align:right;">
+0.20
+</td>
+<td style="text-align:right;">
+0.05
+</td>
+<td style="text-align:right;">
+0.05
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+V7
+</td>
+<td style="text-align:right;">
+0.20
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+0.05
+</td>
+<td style="text-align:right;">
+0.20
+</td>
+<td style="text-align:right;">
+0.05
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+-0.05
+</td>
+<td style="text-align:right;">
+0.05
+</td>
+<td style="text-align:right;">
+-0.05
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+V8
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+0.05
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+0.05
+</td>
+<td style="text-align:right;">
+-0.20
+</td>
+<td style="text-align:right;">
+0.05
+</td>
+<td style="text-align:right;">
+0.20
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+0.05
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+V9
+</td>
+<td style="text-align:right;">
+0.05
+</td>
+<td style="text-align:right;">
+0.20
+</td>
+<td style="text-align:right;">
+-0.20
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+0.20
+</td>
+<td style="text-align:right;">
+0.20
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+-0.20
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+V10
+</td>
+<td style="text-align:right;">
+-0.05
+</td>
+<td style="text-align:right;">
+-0.20
+</td>
+<td style="text-align:right;">
+0.20
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+<td style="text-align:right;">
+0.05
+</td>
+<td style="text-align:right;">
+0.05
+</td>
+<td style="text-align:right;">
+-0.20
+</td>
+<td style="text-align:right;">
+0.05
+</td>
+<td style="text-align:right;">
+-0.20
+</td>
+<td style="text-align:right;">
+0.00
+</td>
+</tr>
+</tbody>
+</table>
+<p>In this example there are predator-prey, mutualistic and competitive interactions among 10 species (Vn). For instance, V1 has:</p>
+<ul>
+<li>A trophic interaction (+, -) of weight 0.2 with V2</li>
+<li>A competence interaction (-, -) of weight 0.05 with V3</li>
+<li>A mutualistic interaction (+,`+) of asymetric weight (0.20, 0.05) with V9.</li>
+</ul>
+<p>Now we can see how different aspects of biotic interactions affect the system stability.
+<br></p>
+</div>
+<div id="connectance" class="section level1">
+<h1>Connectance</h1>
+<p>An interacting community can be represented as a network. The nodes of the network represent organisms and the edges represent interactions. The <em>connectance</em> is a measure of how densely interconnected the network is. Consequently, a higher number of interactions for a given number of nodes increases the network connectance.</p>
+<p><img src="/posts/Interaccions_PP/InteactionsStability_files/figure-html/unnamed-chunk-4-1.png" width="2100" /></p>
+<p>Random interaction matrices have been generated in the connectance gradient and the equilibriums have been calculated. The eigenvalues obtained from the diagonalization of the Jacobian matrix has been studied to asses the probability of stable equilibrium at increasing connectance scenarios.</p>
+<p><img src="/posts/Interaccions_PP/InteactionsStability_files/figure-html/unnamed-chunk-5-1.png" width="1800" /></p>
+<p>The results show a decreasing probability of stability in the connectance gradient, which may reflect a destabilizing nature of biotic interactions.</p>
+</div>
+<div id="interaction-strength" class="section level1">
+<h1>Interaction Strength</h1>
+<p>To keep it simple, the strength of biotic interactions have been restricted to two possible values: <em>weak</em> (0.05) and <em>strong</em> (0.2). In the previous simulations, the proportion of weak and strong interactions was constant. However, we will now asses the effect of increasing the proportion of strong interactions over the probability of stable equilibrium.</p>
+<p><img src="/posts/Interaccions_PP/InteactionsStability_files/figure-html/unnamed-chunk-6-1.png" width="2100" /></p>
+<p><img src="/posts/Interaccions_PP/InteactionsStability_files/figure-html/unnamed-chunk-7-1.png" width="1800" /></p>
 </div>
