@@ -1,12 +1,12 @@
 ---
-date: "2021-09-15"
+date: "2021-04-10"
 highlight: true
 title: Do biotic interactions affect ecosystem stability? 
 subtitle: Simulating interaction networks in R. 
 type: book
 weight: 30
 bibliography: mybibfile.bib
-draft: true
+draft: false
 hidden: false
 ---
 
@@ -364,7 +364,7 @@ It seems like increasing the proportion of strong interactions also has a destab
 
 
 
-When calcualting the stability proportion for different combinations of interaction strengths and connectances we obtain the following result: 
+When calculating the probability of stable equilibrium for different combinations of interaction strengths and network connectances we obtain the following result: 
 
 ```{r, message=F, echo=F, include=T, dpi=300, fig.width=4.5, fig.height=2}
 
@@ -381,11 +381,8 @@ grid.arrange(
   ggplot(stability.data.sum, aes(x=nInt, y=sIntProp, z= stability.mean))+
                theme_bw()+
   stat_summary_hex(bins=10,col="white", size=0.5)+ 
-    scale_fill_gradient2(name= "Stability",
-                         low="coral4",
-                         mid="wheat2",
-                         high="deepskyblue4", 
-                         midpoint = 0.5)+ 
+    scale_fill_gradientn(name= "Stability",
+                         colors= c("coral4","wheat1","deepskyblue4"))+ 
     xlab("Interactions/Species")+ylab("sI/wI")+
         theme_classic()+
     theme(text=element_text(size=12, family= "serif"), aspect.ratio = 1, axis.line = element_blank()), ncol=1)
@@ -394,6 +391,7 @@ grid.arrange(
 
 
 ```
+
 
 
 
